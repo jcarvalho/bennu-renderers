@@ -8,8 +8,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.fenixedu.bennu.core.domain.Bennu;
 import org.fenixedu.bennu.core.presentationTier.actions.ContextBaseAction;
-import org.fenixedu.bennu.portal.Application;
-import org.fenixedu.bennu.portal.Functionality;
+import org.fenixedu.bennu.portal.StrutsApplication;
+import org.fenixedu.bennu.portal.StrutsFunctionality;
 import org.fenixedu.bennu.renderers.example.domain.ShoppingList;
 import org.fenixedu.bennu.renderers.example.domain.ShoppingListItem;
 
@@ -17,12 +17,14 @@ import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 import pt.ist.fenixWebFramework.struts.annotations.Mapping;
 
 @Mapping(path = "/shopping")
-@Application(path = "shopping", bundle = "resources.ExampleResources", description = "title.example.shoppinglist.description",
-        title = "title.example.shoppinglist")
+@StrutsApplication(path = "shopping", bundle = "resources.ExampleResources",
+        descriptionKey = "title.example.shoppinglist.description", titleKey = "title.example.shoppinglist",
+        accessGroup = "anyone", parent = RenderersExampleApplication.class)
+@StrutsFunctionality(application = ShoppingListApp.class, bundle = "resources.ExampleResources",
+        descriptionKey = "title.example.shoppinglist.list.description", path = "list",
+        titleKey = "title.example.shoppinglist.list")
 public class ShoppingListApp extends ContextBaseAction {
 
-    @Functionality(app = ShoppingListApp.class, path = "list", bundle = "resources.ExampleResources",
-            description = "title.example.shoppinglist.list.description", title = "title.example.shoppinglist.list")
     public ActionForward list(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
         request.setAttribute("list", Bennu.getInstance().getShoppingListSet());
         return forward(request, "/example/shoppinglist.jsp");
@@ -39,7 +41,6 @@ public class ShoppingListApp extends ContextBaseAction {
     }
 
     public ActionForward delete(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
-        ShoppingList list = getDomainObject(request, "listId");
         return list(mapping, form, request, response);
     }
 
@@ -50,7 +51,4 @@ public class ShoppingListApp extends ContextBaseAction {
         return forward(request, "/example/viewShoppinglist.jsp");
     }
 
-    public ActionForward app(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
-        return list(mapping, form, request, response);
-    }
 }
