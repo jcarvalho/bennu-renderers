@@ -8,6 +8,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.fenixedu.bennu.core.domain.Bennu;
 import org.fenixedu.bennu.core.presentationTier.actions.ContextBaseAction;
+import org.fenixedu.bennu.portal.EntryPoint;
 import org.fenixedu.bennu.portal.StrutsApplication;
 import org.fenixedu.bennu.portal.StrutsFunctionality;
 import org.fenixedu.bennu.renderers.example.domain.ShoppingList;
@@ -25,6 +26,7 @@ import pt.ist.fenixWebFramework.struts.annotations.Mapping;
         titleKey = "title.example.shoppinglist.list")
 public class ShoppingListApp extends ContextBaseAction {
 
+    @EntryPoint
     public ActionForward list(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
         request.setAttribute("list", Bennu.getInstance().getShoppingListSet());
         return forward(request, "/example/shoppinglist.jsp");

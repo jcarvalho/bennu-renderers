@@ -1,26 +1,22 @@
 <!Doctype html>
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-logic" prefix="logic"%>
-<%@page import="org.fenixedu.bennu.core.presentationTier.DefaultContext"%>
-
-<%
-	DefaultContext context = (DefaultContext) request.getAttribute("_CONTEXT_");
-%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="contextPath" value="${pageContext.request.contextPath}" scope="request" />
 
 <html>
 	<head>
-		<logic:iterate id="head" collection="<%=context.getHead()%>" type="java.lang.String">
-			<jsp:include page="<%=head%>" />
-		</logic:iterate>
-		<script type="text/javascript" src="bankai/js/libs/mustache/mustache.js"></script>
-		<script type="text/javascript" src="bankai/js/libs/jquery/jquery.js"></script>
-		<logic:iterate id="script" collection="<%=context.getScripts()%>" type="java.lang.String">
-			<jsp:include page="<%=script%>" />
-		</logic:iterate>
-		<script type="text/javascript" src="bennu-portal/portal.js"></script>
+		<c:forEach var="head" items="${_CONTEXT_.head}">
+			<jsp:include page="${head}" />
+		</c:forEach>
+		<script type="text/javascript" src="${contextPath}/bankai/js/libs/mustache/mustache.js"></script>
+		<script type="text/javascript" src="${contextPath}/bankai/js/libs/jquery/jquery.js"></script>
+		<c:forEach var="script" items="${_CONTEXT_.scripts}">
+			<jsp:include page="${script}" />
+		</c:forEach>
+		<script type="text/javascript" src="${contextPath}/bennu-portal/portal.js"></script>
 	</head>
 	<body style="display:none;" class="body">
 		<div id="portal-container">
-			<jsp:include page="<%=context.getBody()%>" />
+			<jsp:include page="${_CONTEXT_.body}" />
 		</div>
 	</body>
 </html>

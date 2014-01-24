@@ -1,5 +1,6 @@
 package org.fenixedu.bennu.portal;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +11,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
+import org.apache.struts.actions.DispatchAction;
 import org.fenixedu.bennu.core.i18n.BundleUtil;
 import org.fenixedu.bennu.portal.model.Application;
 import org.fenixedu.bennu.portal.model.ApplicationRegistry;
@@ -40,7 +42,7 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                     LocalizedString title = BundleUtil.getLocalizedString(functionality.bundle(), functionality.titleKey());
                     LocalizedString description =
                             BundleUtil.getLocalizedString(functionality.bundle(), functionality.descriptionKey());
-                    functionalityClasses.put(type, new Functionality(StrutsPortalBackend.BACKEND_KEY, type.getName(),
+                    functionalityClasses.put(type, new Functionality(StrutsPortalBackend.BACKEND_KEY, computePath(type),
                             functionality.path(), functionality.accessGroup(), title, description));
                 }
                 StrutsApplication application = type.getAnnotation(StrutsApplication.class);
@@ -75,6 +77,32 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                 ApplicationRegistry.registerApplication(app);
             }
         }
+    }
+
+    private String computePath(Class<?> type) {
+        Mapping mapping = type.getAnnotation(Mapping.class);
+        StringBuilder path = new StringBuilder();
+
+        path.append(mapping.path());
+        path.append(".do");
+
+        if (DispatchAction.class.isAssignableFrom(type)) {
+            path.append('?');
+            path.append(mapping.parameter());
+            path.append('=');
+            path.append(findEntryPoint(type));
+        }
+
+        return path.toString();
+    }
+
+    private String findEntryPoint(Class<?> type) {
+        for (Method method : type.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(EntryPoint.class)) {
+                return method.getName();
+            }
+        }
+        throw new Error("Functionality class " + type + " does not have a entry point!");
     }
 
 }
