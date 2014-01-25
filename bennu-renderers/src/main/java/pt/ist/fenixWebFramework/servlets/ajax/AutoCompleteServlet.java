@@ -1,28 +1,32 @@
 package pt.ist.fenixWebFramework.servlets.ajax;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.fenixedu.bennu.core.presentationTier.renderers.autoCompleteProvider.AutoCompleteProvider;
 
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.GenericChecksumRewriter;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RequestChecksumFilter;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RequestChecksumFilter.UrlTamperingException;
-import pt.ist.fenixWebFramework.servlets.json.JsonObject;
 
 import com.google.common.base.Charsets;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
-public abstract class AutoCompleteServlet extends HttpServlet {
+@WebServlet("/ajax/AutoCompleteServlet")
+public class AutoCompleteServlet extends HttpServlet {
+
+    private static final long serialVersionUID = 6908539612870905011L;
 
     public static final String STYLE_CLASS = "styleClass";
 
@@ -61,14 +65,14 @@ public abstract class AutoCompleteServlet extends HttpServlet {
                 request.getSession().invalidate();
             }
             response.setContentType("application/json; charset=" + JAVASCRIPT_LIBRARY_ENCODING);
-            response.sendError(response.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
 
         String value = new String(request.getParameter("value").getBytes(), JAVASCRIPT_LIBRARY_ENCODING);
         Map<String, String> argsMap = getArgsMap(request.getParameter("args"));
         int maxCount = getNumber(request.getParameter(MAX_COUNT), DEFAULT_MAX_COUNT);
 
-        Collection result = getSearchResult(argsMap, value, maxCount);
+        Collection<?> result = getSearchResult(argsMap, value, maxCount);
 
         String labelField = request.getParameter(LABEL_FIELD);
         String format = request.getParameter(FORMAT);
@@ -120,7 +124,19 @@ public abstract class AutoCompleteServlet extends HttpServlet {
         }
     }
 
-    protected abstract Collection getSearchResult(Map<String, String> argsMap, String value, int maxCount);
+    protected Collection<?> getSearchResult(Map<String, String> argsMap, String value, int maxCount) {
+        AutoCompleteProvider<?> provider = getProvider(argsMap.get("provider"));
+        return provider.getSearchResults(argsMap, value, maxCount);
+    }
+
+    private AutoCompleteProvider<?> getProvider(String providerClass) {
+        try {
+            Class<?> provider = Class.forName(providerClass);
+            return (AutoCompleteProvider<?>) provider.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("cannot find provider " + providerClass);
+        }
+    }
 
     private Map<String, String> getArgsMap(String encodedServiceArgs) {
         String[] serviceArgsArray = encodedServiceArgs.split(",");
@@ -134,9 +150,9 @@ public abstract class AutoCompleteServlet extends HttpServlet {
         return serviceArgsMap;
     }
 
-    private String getResponseHtml(Collection result, String labelField, String format, String valueField, String styleClass,
+    private String getResponseHtml(Collection<?> result, String labelField, String format, String valueField, String styleClass,
             int maxCount) {
-        List<JsonObject> jsonObjects = new ArrayList<JsonObject>();
+        JsonArray jsonArray = new JsonArray();
         try {
             int count = 0;
             for (final Object element : result) {
@@ -144,19 +160,22 @@ public abstract class AutoCompleteServlet extends HttpServlet {
                     break;
                 }
 
-                final String labelProperty = BeanUtils.getProperty(element, labelField);
+                JsonObject object = new JsonObject();
+                object.addProperty("oid", BeanUtils.getProperty(element, valueField));
+
                 if (format == null) {
-                    jsonObjects.add(new JsonObject(BeanUtils.getProperty(element, valueField), labelProperty));
+                    object.addProperty("description", BeanUtils.getProperty(element, labelField));
                 } else {
-                    jsonObjects.add(new JsonObject(BeanUtils.getProperty(element, valueField), RenderUtils
-                            .getFormattedProperties(format, element)));
+                    object.addProperty("description", RenderUtils.getFormattedProperties(format, element));
                 }
+
+                jsonArray.add(object);
             }
         } catch (Exception ex) {
             throw new RuntimeException("Error getting field property (see label and value fields)", ex);
 
         }
 
-        return JsonObject.getJsonArrayString(jsonObjects);
+        return jsonArray.toString();
     }
 }

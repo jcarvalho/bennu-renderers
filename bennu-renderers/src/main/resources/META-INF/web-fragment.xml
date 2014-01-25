@@ -82,17 +82,6 @@
         <url-pattern>*.do</url-pattern>
     </filter-mapping>
 
-    <servlet>
-        <servlet-name>AutoCompleteServlet</servlet-name>
-        <servlet-class>org.fenixedu.bennu.core.presentationTier.servlets.ajax.MyorgAutoCompleteServlet</servlet-class>
-        <load-on-startup>2</load-on-startup>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>AutoCompleteServlet</servlet-name>
-        <url-pattern>/ajax/AutoCompleteServlet</url-pattern>
-    </servlet-mapping>
-
     <session-config>
         <session-timeout>120</session-timeout>
     </session-config>
