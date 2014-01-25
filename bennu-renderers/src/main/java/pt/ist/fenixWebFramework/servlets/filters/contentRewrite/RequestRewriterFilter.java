@@ -3,7 +3,6 @@ package pt.ist.fenixWebFramework.servlets.filters.contentRewrite;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -11,6 +10,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,30 +23,15 @@ import org.fenixedu.bennu.core.security.Authenticate;
 
 import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 
+@WebFilter("*")
 public class RequestRewriterFilter implements Filter {
 
     private static final String RENDERERS_SESSION_SECRET = "RENDERERS_SESSION_SECRET";
-
-    public static interface RequestRewriterFactory {
-        public RequestRewriter createRequestRewriter(HttpServletRequest request);
-    }
-
-    private static final ConcurrentLinkedQueue<RequestRewriterFactory> rewriters = new ConcurrentLinkedQueue<>();
-
-    public static void registerRequestRewriter(RequestRewriterFactory rewriter) {
-        rewriters.add(rewriter);
-    }
 
     private static final ThreadLocal<String> currentSecret = new InheritableThreadLocal<>();
 
     @Override
     public void init(FilterConfig config) {
-        registerRequestRewriter(new RequestRewriterFactory() {
-            @Override
-            public RequestRewriter createRequestRewriter(HttpServletRequest request) {
-                return new GenericChecksumRewriter(request);
-            }
-        });
     }
 
     @Override
@@ -64,7 +49,7 @@ public class RequestRewriterFilter implements Filter {
         try {
             setSessionKey(httpServletRequest);
             filterChain.doFilter(httpServletRequest, responseWrapper);
-            responseWrapper.writeRealResponse(httpServletRequest, rewriters);
+            responseWrapper.writeRealResponse();
         } finally {
             currentSecret.remove();
         }
