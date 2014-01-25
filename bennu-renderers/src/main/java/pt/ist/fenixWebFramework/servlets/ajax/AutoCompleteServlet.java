@@ -17,7 +17,6 @@ import org.fenixedu.bennu.core.presentationTier.renderers.autoCompleteProvider.A
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.GenericChecksumRewriter;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RequestChecksumFilter;
-import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RequestChecksumFilter.UrlTamperingException;
 
 import com.google.common.base.Charsets;
 import com.google.gson.JsonArray;
@@ -57,10 +56,7 @@ public class AutoCompleteServlet extends HttpServlet {
         request.setCharacterEncoding(JAVASCRIPT_LIBRARY_ENCODING);
 
         //let's take care of the checksum validation
-        try {
-            validateChecksum(request);
-
-        } catch (UrlTamperingException ex) {
+        if (!validateChecksum(request)) {
             if (request.getSession() != null) {
                 request.getSession().invalidate();
             }
@@ -83,16 +79,13 @@ public class AutoCompleteServlet extends HttpServlet {
         response.getWriter().write(getResponseHtml(result, labelField, format, valueField, styleClass, maxCount));
     }
 
-    private void validateChecksum(HttpServletRequest request) throws RequestChecksumFilter.UrlTamperingException {
+    private boolean validateChecksum(HttpServletRequest request) {
         String checksum = request.getParameter(GenericChecksumRewriter.CHECKSUM_ATTRIBUTE_NAME);
         if (checksum == null || checksum.length() == 0) {
             checksum = (String) request.getAttribute(GenericChecksumRewriter.CHECKSUM_ATTRIBUTE_NAME);
         }
 
-        if (!isValidChecksum(request, checksum)) {
-            throw new RequestChecksumFilter.UrlTamperingException();
-        }
-
+        return isValidChecksum(request, checksum);
     }
 
     private boolean isValidChecksum(final HttpServletRequest request, final String checksum) {

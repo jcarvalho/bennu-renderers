@@ -46,37 +46,24 @@ public class RequestChecksumFilter implements Filter {
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain)
             throws IOException, ServletException {
         if (RenderersConfigurationManager.getConfiguration().filterRequestWithDigest()) {
-            try {
-                applyFilter(servletRequest, servletResponse, filterChain);
-            } catch (UrlTamperingException ex) {
-                final HttpServletRequest request = (HttpServletRequest) servletRequest;
-                final HttpServletResponse response = (HttpServletResponse) servletResponse;
-                final HttpSession httpSession = request.getSession(false);
-                if (httpSession != null) {
-                    httpSession.invalidate();
-                }
-                redirectByTampering(request, response);
+            final HttpServletRequest request = (HttpServletRequest) servletRequest;
+            if (shouldValidateChecksum(request) && !isValidChecksum(request)) {
+                handleInvalidChecksum(request, (HttpServletResponse) servletResponse);
+                return;
             }
-        } else {
-            filterChain.doFilter(servletRequest, servletResponse);
         }
-    }
-
-    protected void redirectByTampering(HttpServletRequest request, final HttpServletResponse response) throws IOException {
-        response.sendRedirect(RenderersConfigurationManager.getConfiguration().tamperingRedirect());
-    }
-
-    private void applyFilter(final ServletRequest servletRequest, final ServletResponse servletResponse,
-            final FilterChain filterChain) throws IOException, ServletException {
-        final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        if (shoudFilterReques(httpServletRequest)) {
-            verifyRequestChecksum(httpServletRequest);
-        }
-
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
-    protected boolean shoudFilterReques(final HttpServletRequest httpServletRequest) {
+    protected void handleInvalidChecksum(HttpServletRequest request, final HttpServletResponse response) throws IOException {
+        final HttpSession httpSession = request.getSession(false);
+        if (httpSession != null) {
+            httpSession.invalidate();
+        }
+        response.sendRedirect(RenderersConfigurationManager.getConfiguration().tamperingRedirect());
+    }
+
+    protected boolean shouldValidateChecksum(final HttpServletRequest httpServletRequest) {
         for (ChecksumPredicate predicate : predicates) {
             if (!predicate.shouldFilter(httpServletRequest)) {
                 return false;
@@ -85,67 +72,12 @@ public class RequestChecksumFilter implements Filter {
         return true;
     }
 
-    public static class UrlTamperingException extends Error {
-        public UrlTamperingException() {
-            super("error.url.tampering");
-        }
-    }
-
-    private void verifyRequestChecksum(final HttpServletRequest httpServletRequest) {
+    private boolean isValidChecksum(final HttpServletRequest httpServletRequest) {
         String checksum = httpServletRequest.getParameter(GenericChecksumRewriter.CHECKSUM_ATTRIBUTE_NAME);
         if (checksum == null || checksum.length() == 0) {
             checksum = (String) httpServletRequest.getAttribute(GenericChecksumRewriter.CHECKSUM_ATTRIBUTE_NAME);
         }
-        if (!isValidChecksum(httpServletRequest, checksum)) {
-            // if (LogLevel.ERROR) {
-            // final User user = UserView.getUser();
-            // final String userString = ((user == null) ? "<no user logged in>"
-            // : user.getUsername()) + " key : "
-            // + ((user == null) ? "No user" :
-            // user.getPrivateConstantForDigestCalculation());
-            // final String url = httpServletRequest.getRequestURI() + '?' +
-            // httpServletRequest.getQueryString();
-            // final StringBuilder stringBuilder = new StringBuilder();
-            // stringBuilder.append("Detected url tampering by user: ");
-            // stringBuilder.append(userString);
-            // stringBuilder.append("\n           url: ");
-            // stringBuilder.append(url);
-            // stringBuilder.append("\n   decoded url iso-8859-1: ");
-            // stringBuilder.append(decodeURL(url, "ISO-8859-1"));
-            // stringBuilder.append("\n   decoded url utf-8: ");
-            // stringBuilder.append(decodeURL(url, "UTF-8"));
-            // stringBuilder.append("\n          from: ");
-            // stringBuilder.append(httpServletRequest.getRemoteHost());
-            // stringBuilder.append(" (");
-            // stringBuilder.append(httpServletRequest.getRemoteAddr());
-            // stringBuilder.append(")");
-            // for (final Enumeration<String> headerNames =
-            // httpServletRequest.getHeaderNames();
-            // headerNames.hasMoreElements();) {
-            // final String name = headerNames.nextElement();
-            // stringBuilder.append("\n        header: ");
-            // stringBuilder.append(name);
-            // stringBuilder.append(" = ");
-            // stringBuilder.append(httpServletRequest.getHeader(name));
-            // }
-            //
-            // HttpSession session = httpServletRequest.getSession(false);
-            // if (session != null) {
-            // stringBuilder.append("\nSession creation: ");
-            // stringBuilder.append(session.getCreationTime());
-            // stringBuilder.append(" Session Id: ");
-            // stringBuilder.append(session.getId());
-            // stringBuilder.append(" Max inactive time: ");
-            // stringBuilder.append(session.getMaxInactiveInterval());
-            // stringBuilder.append(" Last time access: ");
-            // stringBuilder.append(session.getLastAccessedTime());
-            // stringBuilder.append(" Current time: ");
-            // stringBuilder.append(System.currentTimeMillis());
-            // }
-            // System.out.println(stringBuilder.toString());
-            // }
-            throw new UrlTamperingException();
-        }
+        return isValidChecksum(httpServletRequest, checksum);
     }
 
     public static String decodeURL(final String url, final String encoding) {
@@ -161,15 +93,10 @@ public class RequestChecksumFilter implements Filter {
 
     private boolean isValidChecksum(final HttpServletRequest httpServletRequest, final String checksum) {
         final String uri = decodeURL(httpServletRequest.getRequestURI(), ENCODING);
-
-        return isValidChecksum(uri, decodeURL(httpServletRequest.getQueryString(), ENCODING), checksum) ||
-
-        isValidChecksum(uri, httpServletRequest.getQueryString(), checksum) ||
-
-        isValidChecksumIgnoringPath(uri, checksum, decodeURL(httpServletRequest.getQueryString(), ENCODING)) ||
-
-        isValidChecksumIgnoringPath(uri, checksum, httpServletRequest.getQueryString());
-
+        return isValidChecksum(uri, decodeURL(httpServletRequest.getQueryString(), ENCODING), checksum)
+                || isValidChecksum(uri, httpServletRequest.getQueryString(), checksum)
+                || isValidChecksumIgnoringPath(uri, checksum, decodeURL(httpServletRequest.getQueryString(), ENCODING))
+                || isValidChecksumIgnoringPath(uri, checksum, httpServletRequest.getQueryString());
     }
 
     private boolean isValidChecksum(String uri, String queryString, String checksum) {
