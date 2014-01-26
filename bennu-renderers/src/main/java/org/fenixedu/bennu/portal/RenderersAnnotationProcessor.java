@@ -25,13 +25,14 @@ import pt.ist.fenixWebFramework.struts.plugin.StrutsAnnotationsPlugIn;
 @HandlesTypes({ Mapping.class, StrutsApplication.class, StrutsFunctionality.class })
 public class RenderersAnnotationProcessor implements ServletContainerInitializer {
 
+    private static final Map<Class<?>, Functionality> functionalityClasses = new HashMap<Class<?>, Functionality>();
+
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context) throws ServletException {
         PortalBackendRegistry.registerPortalBackend(new StrutsPortalBackend());
 
         if (classes != null) {
             Map<Class<?>, Application> applicationClasses = new HashMap<Class<?>, Application>();
-            Map<Class<?>, Functionality> functionalityClasses = new HashMap<Class<?>, Functionality>();
             for (Class<?> type : classes) {
                 Mapping mapping = type.getAnnotation(Mapping.class);
                 if (mapping != null) {
@@ -76,6 +77,8 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
             for (Application app : applicationClasses.values()) {
                 ApplicationRegistry.registerApplication(app);
             }
+
+            // TODO: Finish filling the functionality map
         }
     }
 
@@ -103,6 +106,10 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
             }
         }
         throw new Error("Functionality class " + type + " does not have a entry point!");
+    }
+
+    public static Functionality getFunctionalityForType(Class<?> actionClass) {
+        return functionalityClasses.get(actionClass);
     }
 
 }

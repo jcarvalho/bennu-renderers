@@ -13,6 +13,14 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.RequestProcessor;
+import org.fenixedu.bennu.portal.RenderersAnnotationProcessor;
+import org.fenixedu.bennu.portal.domain.MenuContainer;
+import org.fenixedu.bennu.portal.domain.MenuFunctionality;
+import org.fenixedu.bennu.portal.domain.MenuItem;
+import org.fenixedu.bennu.portal.domain.PortalConfiguration;
+import org.fenixedu.bennu.portal.servlet.BennuPortalDispatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pt.ist.fenixWebFramework._development.LogLevel;
 import pt.ist.fenixWebFramework.renderers.components.state.ComponentLifeCycle;
@@ -44,6 +52,8 @@ import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
  */
 public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
+    private static final Logger logger = LoggerFactory.getLogger(SimpleRenderersRequestProcessor.class);
+
     @Override
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         RenderersRequestProcessorImpl.currentRequest.set(request);
@@ -73,6 +83,7 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
     @Override
     protected ActionForward processActionPerform(HttpServletRequest request, HttpServletResponse response, Action action,
             ActionForm form, ActionMapping mapping) throws IOException, ServletException {
+        chooseSelectedFunctionality(request, action);
         RenderersRequestProcessorImpl.currentRequest.set(RenderersRequestProcessorImpl.parseMultipartRequest(request, form));
         HttpServletRequest initialRequest = RenderersRequestProcessorImpl.currentRequest.get();
 
@@ -120,6 +131,33 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
             return super.processActionPerform(request, response, action, form, mapping);
         }
 
+    }
+
+    private void chooseSelectedFunctionality(HttpServletRequest request, Action action) {
+        if (request.getAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY) == null) {
+            MenuFunctionality functionality =
+                    findFunctionalityWithKey(PortalConfiguration.getInstance().getMenu(), RenderersAnnotationProcessor
+                            .getFunctionalityForType(action.getClass()).getKey());
+            logger.debug("Selected MenuFunctionality {}", functionality);
+            request.setAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY, functionality);
+        }
+    }
+
+    private MenuFunctionality findFunctionalityWithKey(MenuContainer container, String key) {
+        for (MenuItem item : container.getChildSet()) {
+            if (item instanceof MenuFunctionality) {
+                MenuFunctionality functionality = (MenuFunctionality) item;
+                if (functionality.getItemKey().equals(key)) {
+                    return functionality;
+                }
+            } else {
+                MenuFunctionality functionality = findFunctionalityWithKey((MenuContainer) item, key);
+                if (functionality != null) {
+                    return functionality;
+                }
+            }
+        }
+        throw new RuntimeException("Trying to access a non installed functionality!");
     }
 
 }
