@@ -53,6 +53,7 @@ public class BufferedFacadPrintWriter extends PrintWriter {
         printWriter.close();
     }
 
+    @Deprecated
     public String getContent() {
         return stringBuilder.toString();
     }

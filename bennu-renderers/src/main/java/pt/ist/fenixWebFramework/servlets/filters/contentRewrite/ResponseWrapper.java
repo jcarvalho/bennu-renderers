@@ -36,6 +36,14 @@ public class ResponseWrapper extends HttpServletResponseWrapper {
         }
     }
 
+    @Deprecated
+    public String getContent() {
+        if (bufferedFacadPrintWriter != null) {
+            return bufferedFacadPrintWriter.getContent();
+        }
+        return "";
+    }
+
     @Override
     public void resetBuffer() {
         super.resetBuffer();
