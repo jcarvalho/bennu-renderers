@@ -71,6 +71,7 @@ public class RenderersRequestProcessor extends TilesRequestProcessor {
     @Override
     protected ActionForward processActionPerform(HttpServletRequest request, HttpServletResponse response, Action action,
             ActionForm form, ActionMapping mapping) throws IOException, ServletException {
+        SimpleRenderersRequestProcessor.chooseSelectedFunctionality(request, action);
         RenderersRequestProcessorImpl.currentRequest.set(RenderersRequestProcessorImpl.parseMultipartRequest(request, form));
         HttpServletRequest initialRequest = RenderersRequestProcessorImpl.currentRequest.get();
 

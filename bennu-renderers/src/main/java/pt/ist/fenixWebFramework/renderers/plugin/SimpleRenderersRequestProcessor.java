@@ -134,7 +134,7 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
     }
 
-    private void chooseSelectedFunctionality(HttpServletRequest request, Action action) {
+    static void chooseSelectedFunctionality(HttpServletRequest request, Action action) {
         if (request.getAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY) == null) {
             Functionality model = RenderersAnnotationProcessor.getFunctionalityForType(action.getClass());
             if (model == null) {
@@ -143,12 +143,15 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
             }
             MenuFunctionality functionality =
                     findFunctionalityWithKey(PortalConfiguration.getInstance().getMenu(), model.getKey());
+            if (functionality == null) {
+                logger.warn("Trying to access a not installed functionality!");
+            }
             logger.debug("Selected MenuFunctionality {}", functionality);
             request.setAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY, functionality);
         }
     }
 
-    private MenuFunctionality findFunctionalityWithKey(MenuContainer container, String key) {
+    private static MenuFunctionality findFunctionalityWithKey(MenuContainer container, String key) {
         for (MenuItem item : container.getChildSet()) {
             if (item instanceof MenuFunctionality) {
                 MenuFunctionality functionality = (MenuFunctionality) item;
@@ -162,7 +165,7 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
                 }
             }
         }
-        throw new RuntimeException("Trying to access a non installed functionality!");
+        return null;
     }
 
 }
