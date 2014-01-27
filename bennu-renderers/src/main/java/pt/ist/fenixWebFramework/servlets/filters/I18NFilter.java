@@ -66,8 +66,6 @@ public class I18NFilter implements Filter {
             Language.setLocale(locale);
             updateLocaleForStruts(request, locale);
 
-            request.setAttribute("requestReconstructor", new RequestReconstructor(request));
-
             filterChain.doFilter(servletRequest, servletResponse);
         } finally {
             Language.setLocale(null);
