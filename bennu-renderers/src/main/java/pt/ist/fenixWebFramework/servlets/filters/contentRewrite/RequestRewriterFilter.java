@@ -10,7 +10,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,7 +22,6 @@ import org.fenixedu.bennu.core.security.Authenticate;
 
 import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 
-@WebFilter("*")
 public class RequestRewriterFilter implements Filter {
 
     private static final String RENDERERS_SESSION_SECRET = "RENDERERS_SESSION_SECRET";

@@ -18,6 +18,7 @@ import org.fenixedu.bennu.portal.domain.MenuContainer;
 import org.fenixedu.bennu.portal.domain.MenuFunctionality;
 import org.fenixedu.bennu.portal.domain.MenuItem;
 import org.fenixedu.bennu.portal.domain.PortalConfiguration;
+import org.fenixedu.bennu.portal.model.Functionality;
 import org.fenixedu.bennu.portal.servlet.BennuPortalDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,9 +136,13 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
     private void chooseSelectedFunctionality(HttpServletRequest request, Action action) {
         if (request.getAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY) == null) {
+            Functionality model = RenderersAnnotationProcessor.getFunctionalityForType(action.getClass());
+            if (model == null) {
+                logger.warn("Could not map {} to a functionality!", action.getClass().getName());
+                return;
+            }
             MenuFunctionality functionality =
-                    findFunctionalityWithKey(PortalConfiguration.getInstance().getMenu(), RenderersAnnotationProcessor
-                            .getFunctionalityForType(action.getClass()).getKey());
+                    findFunctionalityWithKey(PortalConfiguration.getInstance().getMenu(), model.getKey());
             logger.debug("Selected MenuFunctionality {}", functionality);
             request.setAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY, functionality);
         }
