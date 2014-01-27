@@ -25,6 +25,8 @@ import pt.ist.fenixWebFramework.struts.plugin.StrutsAnnotationsPlugIn;
 @HandlesTypes({ Mapping.class, StrutsApplication.class, StrutsFunctionality.class })
 public class RenderersAnnotationProcessor implements ServletContainerInitializer {
 
+    static final String DELEGATE_TO_PARENT = "DELEGATE_TO_PARENT";
+
     private static final Map<Class<?>, Functionality> functionalityClasses = new HashMap<Class<?>, Functionality>();
 
     @Override
@@ -40,17 +42,17 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                 }
                 StrutsFunctionality functionality = type.getAnnotation(StrutsFunctionality.class);
                 if (functionality != null) {
-                    LocalizedString title = BundleUtil.getLocalizedString(functionality.bundle(), functionality.titleKey());
-                    LocalizedString description =
-                            BundleUtil.getLocalizedString(functionality.bundle(), functionality.descriptionKey());
+                    String bundle = findBundleForFunctionality(type);
+                    LocalizedString title = BundleUtil.getLocalizedString(bundle, functionality.titleKey());
+                    LocalizedString description = BundleUtil.getLocalizedString(bundle, functionality.descriptionKey());
                     functionalityClasses.put(type, new Functionality(StrutsPortalBackend.BACKEND_KEY, computePath(type),
                             functionality.path(), functionality.accessGroup(), title, description));
                 }
                 StrutsApplication application = type.getAnnotation(StrutsApplication.class);
                 if (application != null) {
-                    LocalizedString title = BundleUtil.getLocalizedString(application.bundle(), application.titleKey());
-                    LocalizedString description =
-                            BundleUtil.getLocalizedString(application.bundle(), application.descriptionKey());
+                    String bundle = findBundleForApplication(type);
+                    LocalizedString title = BundleUtil.getLocalizedString(bundle, application.titleKey());
+                    LocalizedString description = BundleUtil.getLocalizedString(bundle, application.descriptionKey());
                     applicationClasses.put(
                             type,
                             new Application(StrutsPortalBackend.BACKEND_KEY, type.getName(), application.path(), application
@@ -82,9 +84,33 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
         }
     }
 
+    private String findBundleForApplication(Class<?> type) {
+        StrutsApplication app = type.getAnnotation(StrutsApplication.class);
+        if (app == null) {
+            throw new Error("Cannot determine bundle for " + type.getName());
+        }
+        if (!app.bundle().equals(DELEGATE_TO_PARENT)) {
+            return app.bundle();
+        }
+        return findBundleForApplication(app.parent());
+    }
+
+    private String findBundleForFunctionality(Class<?> type) {
+        StrutsFunctionality functionality = type.getAnnotation(StrutsFunctionality.class);
+        if (!functionality.bundle().equals(DELEGATE_TO_PARENT)) {
+            return functionality.bundle();
+        }
+        return findBundleForApplication(functionality.application());
+    }
+
     private String computePath(Class<?> type) {
         Mapping mapping = type.getAnnotation(Mapping.class);
         StringBuilder path = new StringBuilder();
+
+        if (!mapping.module().equals("")) {
+            path.append('/');
+            path.append(mapping.module());
+        }
 
         path.append(mapping.path());
         path.append(".do");
@@ -100,10 +126,13 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
     }
 
     private String findEntryPoint(Class<?> type) {
-        for (Method method : type.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(EntryPoint.class)) {
-                return method.getName();
+        while (type != DispatchAction.class) {
+            for (Method method : type.getDeclaredMethods()) {
+                if (method.isAnnotationPresent(EntryPoint.class)) {
+                    return method.getName();
+                }
             }
+            type = type.getSuperclass();
         }
         throw new Error("Functionality class " + type + " does not have a entry point!");
     }

@@ -13,7 +13,7 @@ public @interface StrutsFunctionality {
 
     String path();
 
-    String bundle();
+    String bundle() default RenderersAnnotationProcessor.DELEGATE_TO_PARENT;
 
     String titleKey();
 
