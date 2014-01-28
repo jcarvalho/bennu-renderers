@@ -2,6 +2,7 @@ package org.fenixedu.bennu.portal;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -35,10 +36,14 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
 
         if (classes != null) {
             Map<Class<?>, Application> applicationClasses = new HashMap<Class<?>, Application>();
+            Set<Class<?>> actionsWithoutFunctionality = new HashSet<>();
             for (Class<?> type : classes) {
                 Mapping mapping = type.getAnnotation(Mapping.class);
                 if (mapping != null) {
                     StrutsAnnotationsPlugIn.registerMapping(type);
+                    if (mapping.functionality() != Object.class) {
+                        actionsWithoutFunctionality.add(type);
+                    }
                 }
                 StrutsFunctionality functionality = type.getAnnotation(StrutsFunctionality.class);
                 if (functionality != null) {
@@ -80,7 +85,15 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                 ApplicationRegistry.registerApplication(app);
             }
 
-            // TODO: Finish filling the functionality map
+            for (Class<?> type : actionsWithoutFunctionality) {
+                Class<?> functionalityType = type.getAnnotation(Mapping.class).functionality();
+                Functionality functionality = functionalityClasses.get(functionalityType);
+                if (functionality == null) {
+                    throw new Error("Action type " + type.getName() + " declares " + functionalityType.getName()
+                            + " but it is not a functionality!");
+                }
+                functionalityClasses.put(type, functionality);
+            }
         }
     }
 
