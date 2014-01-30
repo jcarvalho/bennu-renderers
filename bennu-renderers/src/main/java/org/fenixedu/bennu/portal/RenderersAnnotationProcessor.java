@@ -55,7 +55,7 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                 }
                 StrutsApplication application = type.getAnnotation(StrutsApplication.class);
                 if (application != null) {
-                    String bundle = findBundleForApplication(type);
+                    String bundle = application.bundle();
                     LocalizedString title = BundleUtil.getLocalizedString(bundle, application.titleKey());
                     LocalizedString description = BundleUtil.getLocalizedString(bundle, application.descriptionKey());
                     applicationClasses.put(
@@ -70,15 +70,6 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                     throw new Error("Functionality " + entry.getKey().getName() + " does not have a defined application");
                 }
                 app.addFunctionality(entry.getValue());
-            }
-
-            for (Entry<Class<?>, Application> entry : applicationClasses.entrySet()) {
-                Class<?> parent = entry.getKey().getAnnotation(StrutsApplication.class).parent();
-                if (parent.equals(Object.class)) {
-                    // Application has no parent
-                    continue;
-                }
-                applicationClasses.get(parent).addSubApplication(entry.getValue());
             }
 
             for (Application app : applicationClasses.values()) {
@@ -97,23 +88,13 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
         }
     }
 
-    private String findBundleForApplication(Class<?> type) {
-        StrutsApplication app = type.getAnnotation(StrutsApplication.class);
-        if (app == null) {
-            throw new Error("Cannot determine bundle for " + type.getName());
-        }
-        if (!app.bundle().equals(DELEGATE_TO_PARENT)) {
-            return app.bundle();
-        }
-        return findBundleForApplication(app.parent());
-    }
-
     private String findBundleForFunctionality(Class<?> type) {
         StrutsFunctionality functionality = type.getAnnotation(StrutsFunctionality.class);
-        if (!functionality.bundle().equals(DELEGATE_TO_PARENT)) {
+        if (functionality.bundle().equals(DELEGATE_TO_PARENT)) {
+            return functionality.application().getAnnotation(StrutsApplication.class).bundle();
+        } else {
             return functionality.bundle();
         }
-        return findBundleForApplication(functionality.application());
     }
 
     private String computePath(Class<?> type) {

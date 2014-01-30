@@ -9,11 +9,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StrutsApplication {
 
-    Class<?> parent() default Object.class;
-
     String path();
 
-    String bundle() default RenderersAnnotationProcessor.DELEGATE_TO_PARENT;
+    String bundle();
 
     String titleKey();
 

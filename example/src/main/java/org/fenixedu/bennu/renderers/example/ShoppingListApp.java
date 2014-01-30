@@ -20,7 +20,7 @@ import pt.ist.fenixWebFramework.struts.annotations.Mapping;
 @Mapping(path = "/shopping")
 @StrutsApplication(path = "shopping", bundle = "resources.ExampleResources",
         descriptionKey = "title.example.shoppinglist.description", titleKey = "title.example.shoppinglist",
-        accessGroup = "anyone", parent = RenderersExampleApplication.class)
+        accessGroup = "anyone")
 @StrutsFunctionality(application = ShoppingListApp.class, bundle = "resources.ExampleResources",
         descriptionKey = "title.example.shoppinglist.list.description", path = "list",
         titleKey = "title.example.shoppinglist.list")
