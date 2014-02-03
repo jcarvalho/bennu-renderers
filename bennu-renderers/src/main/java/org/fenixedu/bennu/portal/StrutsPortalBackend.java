@@ -5,7 +5,7 @@ import org.fenixedu.bennu.portal.servlet.SemanticURLHandler;
 
 public class StrutsPortalBackend implements PortalBackend {
 
-    static final String BACKEND_KEY = "struts";
+    public static final String BACKEND_KEY = "struts";
 
     private final SemanticURLHandler handler = new StrutsSemanticURLHandler();
 

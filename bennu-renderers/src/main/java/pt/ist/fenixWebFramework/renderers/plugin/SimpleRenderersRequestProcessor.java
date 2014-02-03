@@ -14,10 +14,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.RequestProcessor;
 import org.fenixedu.bennu.portal.RenderersAnnotationProcessor;
-import org.fenixedu.bennu.portal.domain.MenuContainer;
+import org.fenixedu.bennu.portal.StrutsPortalBackend;
 import org.fenixedu.bennu.portal.domain.MenuFunctionality;
-import org.fenixedu.bennu.portal.domain.MenuItem;
-import org.fenixedu.bennu.portal.domain.PortalConfiguration;
 import org.fenixedu.bennu.portal.model.Functionality;
 import org.fenixedu.bennu.portal.servlet.BennuPortalDispatcher;
 import org.slf4j.Logger;
@@ -142,30 +140,13 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
                 return;
             }
             MenuFunctionality functionality =
-                    findFunctionalityWithKey(PortalConfiguration.getInstance().getMenu(), model.getKey());
+                    MenuFunctionality.findFunctionality(StrutsPortalBackend.BACKEND_KEY, model.getKey());
             if (functionality == null) {
                 logger.warn("Trying to access a not installed functionality!");
             }
             logger.debug("Selected MenuFunctionality {}", functionality);
             request.setAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY, functionality);
         }
-    }
-
-    private static MenuFunctionality findFunctionalityWithKey(MenuContainer container, String key) {
-        for (MenuItem item : container.getChildSet()) {
-            if (item instanceof MenuFunctionality) {
-                MenuFunctionality functionality = (MenuFunctionality) item;
-                if (functionality.getItemKey().equals(key)) {
-                    return functionality;
-                }
-            } else {
-                MenuFunctionality functionality = findFunctionalityWithKey((MenuContainer) item, key);
-                if (functionality != null) {
-                    return functionality;
-                }
-            }
-        }
-        return null;
     }
 
 }
