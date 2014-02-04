@@ -195,7 +195,8 @@ public abstract class BaseAction extends DispatchAction {
     }
 
     protected ActionForward redirect(final HttpServletRequest request, final String url) {
-        final String digest = GenericChecksumRewriter.calculateChecksum(request.getContextPath() + url);
+        final String digest =
+                GenericChecksumRewriter.calculateChecksum(request.getContextPath() + url, request.getSession(false));
         final char seperator = url.indexOf('?') >= 0 ? '&' : '?';
         final String urlWithChecksum = url + seperator + GenericChecksumRewriter.CHECKSUM_ATTRIBUTE_NAME + '=' + digest;
         return new ActionForward(urlWithChecksum, true);

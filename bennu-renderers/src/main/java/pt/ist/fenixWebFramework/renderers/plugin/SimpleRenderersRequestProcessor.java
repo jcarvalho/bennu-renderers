@@ -21,6 +21,7 @@ import org.fenixedu.bennu.portal.servlet.BennuPortalDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 import pt.ist.fenixWebFramework._development.LogLevel;
 import pt.ist.fenixWebFramework.renderers.components.state.ComponentLifeCycle;
 import pt.ist.fenixWebFramework.renderers.components.state.EditRequest.ViewStateUserChangedException;
@@ -97,7 +98,8 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
                 return super.processActionPerform(request, response, action, form, mapping);
             } catch (ViewStateUserChangedException e) {
-                throw e;
+                response.sendRedirect(RenderersConfigurationManager.getConfiguration().tamperingRedirect());
+                return null;
             } catch (Exception e) {
                 if (LogLevel.WARN) {
                     System.out.println(SimpleDateFormat.getInstance().format(new Date()));

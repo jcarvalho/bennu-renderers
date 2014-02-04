@@ -35,26 +35,13 @@
         <filter-class>pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter</filter-class>
     </filter>
     <filter>
-        <filter-name>I18NFilter-renderers</filter-name>
-        <filter-class>pt.ist.fenixWebFramework.servlets.filters.I18NFilter</filter-class>
-    </filter>
-    <filter>
         <filter-name>ExceptionHandlerFilter</filter-name>
         <filter-class>org.fenixedu.bennu.core.presentationTier.servlets.filters.ExceptionHandlerFilter</filter-class>
-    </filter>
-    <filter>
-        <filter-name>RequestRewriterFilter</filter-name>
-        <filter-class>pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RequestRewriterFilter</filter-class>
     </filter>
     <filter>
         <filter-name>RequestChecksumFilter</filter-name>
         <filter-class>pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RequestChecksumFilter</filter-class>
     </filter>
-    <filter>
-        <filter-name>ViewStateChangedExceptionCatcher</filter-name>
-        <filter-class>org.fenixedu.bennu.core.presentationTier.servlets.filters.ViewStateChangedExceptionCatcher</filter-class>
-    </filter>
-
 
     <!-- Filter Mapping -->
     <filter-mapping>
@@ -70,20 +57,8 @@
         <url-pattern>*.do</url-pattern>
     </filter-mapping>
     <filter-mapping>
-        <filter-name>ViewStateChangedExceptionCatcher</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>I18NFilter-renderers</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
         <filter-name>RequestWrapperFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>RequestRewriterFilter</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>*.do</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>RequestChecksumFilter</filter-name>

@@ -14,8 +14,10 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.tiles.TilesRequestProcessor;
 
+import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 import pt.ist.fenixWebFramework._development.LogLevel;
 import pt.ist.fenixWebFramework.renderers.components.state.ComponentLifeCycle;
+import pt.ist.fenixWebFramework.renderers.components.state.EditRequest.ViewStateUserChangedException;
 import pt.ist.fenixWebFramework.renderers.components.state.IViewState;
 import pt.ist.fenixWebFramework.renderers.components.state.ViewDestination;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
@@ -85,6 +87,9 @@ public class RenderersRequestProcessor extends TilesRequestProcessor {
                 }
 
                 return super.processActionPerform(request, response, action, form, mapping);
+            } catch (ViewStateUserChangedException e) {
+                response.sendRedirect(RenderersConfigurationManager.getConfiguration().tamperingRedirect());
+                return null;
             } catch (Exception e) {
                 if (LogLevel.WARN) {
                     System.out.println(SimpleDateFormat.getInstance().format(new Date()));

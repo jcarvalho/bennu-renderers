@@ -2,6 +2,8 @@ package pt.ist.fenixWebFramework.servlets.filters.contentRewrite;
 
 import java.util.TreeSet;
 
+import javax.servlet.http.HttpSession;
+
 import com.google.common.hash.Hashing;
 
 public final class GenericChecksumRewriter {
@@ -25,8 +27,14 @@ public final class GenericChecksumRewriter {
     private static final char[] CARDINAL = "#".toCharArray();
     private static final char[] QUESTION_MARK = "?".toCharArray();
 
-    private static String calculateChecksum(final StringBuilder source, final int start, final int end) {
-        return calculateChecksum(source.substring(start, end));
+    private final String sessionSecret;
+
+    public GenericChecksumRewriter(HttpSession session) {
+        this.sessionSecret = RenderersSessionSecret.computeSecretFromSession(session);
+    }
+
+    private String calculateChecksum(final StringBuilder source, final int start, final int end) {
+        return calculateChecksum(source.substring(start, end), sessionSecret);
     }
 
     private static boolean isRelevantPart(final String part) {
@@ -35,15 +43,14 @@ public final class GenericChecksumRewriter {
                 && !part.startsWith("ok");
     }
 
-    private static String calculateChecksum(final TreeSet<String> strings) {
+    private static String calculateChecksum(final TreeSet<String> strings, String sessionSecret) {
         final StringBuilder stringBuilder = new StringBuilder();
         for (final String string : strings) {
             stringBuilder.append(string);
         }
 
-        final String digest = RequestRewriterFilter.getSessionSecret();
-        if (digest != null) {
-            stringBuilder.append(digest);
+        if (sessionSecret != null) {
+            stringBuilder.append(sessionSecret);
         }
         final String checksum = new String(Hashing.sha1().hashBytes(stringBuilder.toString().getBytes()).toString());
         // System.out.println("Generating checksum for: " +
@@ -51,7 +58,11 @@ public final class GenericChecksumRewriter {
         return checksum;
     }
 
-    public static String calculateChecksum(final String requestString) {
+    public static String calculateChecksum(final String requestString, HttpSession session) {
+        return calculateChecksum(requestString, RenderersSessionSecret.computeSecretFromSession(session));
+    }
+
+    private static String calculateChecksum(final String requestString, String sessionSecret) {
         final int indexLastCardinal = requestString.lastIndexOf('#');
         final String string = indexLastCardinal >= 0 ? requestString.substring(0, indexLastCardinal) : requestString;
         final String[] parts = string.split("\\?|&amp;|&");
@@ -68,13 +79,11 @@ public final class GenericChecksumRewriter {
                 }
             }
         }
-        return calculateChecksum(strings);
+        return calculateChecksum(strings, sessionSecret);
     }
 
-    public static String injectChecksumInUrl(final String contextPath, final String url) {
-        String checksum =
-                GenericChecksumRewriter.CHECKSUM_ATTRIBUTE_NAME + "="
-                        + GenericChecksumRewriter.calculateChecksum(contextPath + url);
+    public static String injectChecksumInUrl(final String contextPath, final String url, HttpSession session) {
+        String checksum = CHECKSUM_ATTRIBUTE_NAME + "=" + calculateChecksum(contextPath + url, session);
         return url + "&" + checksum;
     }
 

@@ -10,12 +10,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.fenixedu.bennu.portal.domain.MenuFunctionality;
 import org.fenixedu.bennu.portal.servlet.SemanticURLHandler;
 
+import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter;
+import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.ResponseWrapper;
+
 public class StrutsSemanticURLHandler implements SemanticURLHandler {
 
     @Override
     public void handleRequest(MenuFunctionality functionality, HttpServletRequest request, HttpServletResponse response,
             FilterChain chain) throws IOException, ServletException {
-        request.getRequestDispatcher(functionality.getItemKey()).forward(request, response);
+        ResponseWrapper responseWrapper = new ResponseWrapper(response);
+        request.getRequestDispatcher(functionality.getItemKey()).forward(
+                RequestWrapperFilter.getFenixHttpServletRequestWrapper(request), responseWrapper);
+        responseWrapper.writeRealResponse(request.getSession(false));
     }
 
 }

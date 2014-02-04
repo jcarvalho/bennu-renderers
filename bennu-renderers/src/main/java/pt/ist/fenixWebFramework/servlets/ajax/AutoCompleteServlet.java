@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.fenixedu.bennu.core.presentationTier.renderers.autoCompleteProvider.AutoCompleteProvider;
@@ -98,11 +99,12 @@ public class AutoCompleteServlet extends HttpServlet {
         checksumRelevantString += request.getParameter(VALUE_FIELD);
         checksumRelevantString += request.getParameter(STYLE_CLASS);
 
-        return checksum.length() > 0
-                && (checksum.equals(GenericChecksumRewriter.calculateChecksum(checksumRelevantString)) || checksum
-                        .equals(GenericChecksumRewriter.calculateChecksum(RequestChecksumFilter.decodeURL(checksumRelevantString,
-                                JAVASCRIPT_LIBRARY_ENCODING))));
+        HttpSession session = request.getSession(false);
 
+        return checksum.length() > 0
+                && (checksum.equals(GenericChecksumRewriter.calculateChecksum(checksumRelevantString, session)) || checksum
+                        .equals(GenericChecksumRewriter.calculateChecksum(
+                                RequestChecksumFilter.decodeURL(checksumRelevantString, JAVASCRIPT_LIBRARY_ENCODING), session)));
     }
 
     private int getNumber(String parameter, int defaultValue) {

@@ -8,7 +8,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
 import javax.servlet.Filter;
@@ -25,9 +27,11 @@ import org.apache.commons.fileupload.DefaultFileItemFactory;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.struts.Globals;
 import org.fenixedu.bennu.core.domain.User;
 import org.fenixedu.bennu.core.domain.groups.Group;
 import org.fenixedu.bennu.core.security.Authenticate;
+import org.fenixedu.commons.i18n.I18N;
 
 import pt.ist.fenixWebFramework.servlets.commons.CommonsFile;
 import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
@@ -55,6 +59,15 @@ public class RequestWrapperFilter implements Filter {
         setSessionTimeout(httpServletRequest);
     }
 
+    private static void updateLocaleForStruts(HttpServletRequest request) {
+        Locale locale = I18N.getLocale();
+        HttpSession session = request.getSession(false);
+        if (session != null && !Objects.equals(session.getAttribute(Globals.LOCALE_KEY), locale)) {
+            session.setAttribute(Globals.LOCALE_KEY, locale);
+        }
+        request.setAttribute(Globals.LOCALE_KEY, locale);
+    }
+
     private void setSessionTimeout(final HttpServletRequest request) {
         final HttpSession session = request.getSession(false);
         if (session != null) {
@@ -62,7 +75,8 @@ public class RequestWrapperFilter implements Filter {
         }
     }
 
-    public FenixHttpServletRequestWrapper getFenixHttpServletRequestWrapper(final HttpServletRequest httpServletRequest) {
+    public static FenixHttpServletRequestWrapper getFenixHttpServletRequestWrapper(final HttpServletRequest httpServletRequest) {
+        updateLocaleForStruts(httpServletRequest);
         return new FenixHttpServletRequestWrapper(httpServletRequest);
     }
 

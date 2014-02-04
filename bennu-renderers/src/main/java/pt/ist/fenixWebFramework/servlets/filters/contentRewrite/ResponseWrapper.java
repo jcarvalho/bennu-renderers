@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import javax.servlet.http.HttpSession;
 
 public class ResponseWrapper extends HttpServletResponseWrapper {
 
@@ -30,9 +31,9 @@ public class ResponseWrapper extends HttpServletResponseWrapper {
         }
     }
 
-    public void writeRealResponse() throws IOException {
+    public void writeRealResponse(HttpSession session) throws IOException {
         if (bufferedFacadPrintWriter != null) {
-            bufferedFacadPrintWriter.writeRealResponse();
+            bufferedFacadPrintWriter.writeRealResponse(session);
         }
     }
 

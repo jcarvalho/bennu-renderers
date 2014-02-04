@@ -45,14 +45,16 @@ public class RequestChecksumFilter implements Filter {
     @Override
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain)
             throws IOException, ServletException {
+        final HttpServletRequest request = (HttpServletRequest) servletRequest;
         if (RenderersConfigurationManager.getConfiguration().filterRequestWithDigest()) {
-            final HttpServletRequest request = (HttpServletRequest) servletRequest;
             if (shouldValidateChecksum(request) && !isValidChecksum(request)) {
                 handleInvalidChecksum(request, (HttpServletResponse) servletResponse);
                 return;
             }
         }
-        filterChain.doFilter(servletRequest, servletResponse);
+        ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) servletResponse);
+        filterChain.doFilter(servletRequest, responseWrapper);
+        responseWrapper.writeRealResponse(request.getSession(false));
     }
 
     protected void handleInvalidChecksum(HttpServletRequest request, final HttpServletResponse response) throws IOException {
@@ -92,25 +94,27 @@ public class RequestChecksumFilter implements Filter {
     }
 
     private boolean isValidChecksum(final HttpServletRequest httpServletRequest, final String checksum) {
+        final HttpSession session = httpServletRequest.getSession(false);
         final String uri = decodeURL(httpServletRequest.getRequestURI(), ENCODING);
-        return isValidChecksum(uri, decodeURL(httpServletRequest.getQueryString(), ENCODING), checksum)
-                || isValidChecksum(uri, httpServletRequest.getQueryString(), checksum)
-                || isValidChecksumIgnoringPath(uri, checksum, decodeURL(httpServletRequest.getQueryString(), ENCODING))
-                || isValidChecksumIgnoringPath(uri, checksum, httpServletRequest.getQueryString());
+        return isValidChecksum(uri, decodeURL(httpServletRequest.getQueryString(), ENCODING), checksum, session)
+                || isValidChecksum(uri, httpServletRequest.getQueryString(), checksum, session)
+                || isValidChecksumIgnoringPath(uri, checksum, decodeURL(httpServletRequest.getQueryString(), ENCODING), session)
+                || isValidChecksumIgnoringPath(uri, checksum, httpServletRequest.getQueryString(), session);
     }
 
-    private boolean isValidChecksum(String uri, String queryString, String checksum) {
+    private boolean isValidChecksum(String uri, String queryString, String checksum, HttpSession session) {
         String request = (queryString != null) ? uri + "?" + queryString : uri;
-        return checksum != null && checksum.length() > 0 && checksum.equals(GenericChecksumRewriter.calculateChecksum(request));
+        return checksum != null && checksum.length() > 0
+                && checksum.equals(GenericChecksumRewriter.calculateChecksum(request, session));
     }
 
-    private boolean isValidChecksumIgnoringPath(final String uri, final String checksum, String queryString) {
+    private boolean isValidChecksumIgnoringPath(final String uri, final String checksum, String queryString, HttpSession session) {
         if (uri.endsWith(".faces")) {
             final int lastSlash = uri.lastIndexOf('/');
             if (lastSlash >= 0) {
                 final String chopedUri = uri.substring(lastSlash + 1);
                 final String request = queryString != null ? chopedUri + '?' + queryString : chopedUri;
-                final String calculatedChecksum = GenericChecksumRewriter.calculateChecksum(request);
+                final String calculatedChecksum = GenericChecksumRewriter.calculateChecksum(request, session);
                 return checksum != null && checksum.length() > 0 && checksum.equals(calculatedChecksum);
             }
         }
