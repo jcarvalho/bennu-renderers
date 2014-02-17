@@ -66,48 +66,36 @@ public abstract class BaseAction extends DispatchAction {
     @Override
     public ActionForward execute(final ActionMapping mapping, final ActionForm form, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
-        final Bennu myOrg = getBennu();
-        request.setAttribute("myOrg", myOrg);
+        request.setAttribute("bennu", Bennu.getInstance());
         return super.execute(mapping, form, request, response);
     }
 
+    @SuppressWarnings("unchecked")
     protected <T> T getAttribute(final HttpServletRequest request, final String attributeName) {
         final T t = (T) request.getAttribute(attributeName);
         return t == null ? (T) request.getParameter(attributeName) : t;
     }
 
-    @SuppressWarnings("unchecked")
-    protected <T extends DomainObject> T getDomainObject(final String value) {
-        return (T) FenixFramework.getDomainObject(value);
-    }
-
-    @SuppressWarnings("unchecked")
     protected <T extends DomainObject> T getDomainObject(final HttpServletRequest request, final String attributeName) {
         String oid = request.getParameter(attributeName);
-        if (oid == null || oid.length() == 0) {
-            // This workaround must remain until there is at least one oid being
-            // passed as a long and not its external String format.
-            Object attribute = request.getAttribute(attributeName);
-            if (attribute instanceof Long) {
-                oid = attribute.toString();
-            } else {
-                oid = (String) attribute;
-            }
+        if (oid == null || oid.isEmpty()) {
+            oid = request.getAttribute(attributeName).toString();
         }
-        return (T) FenixFramework.getDomainObject(oid);
+        return FenixFramework.getDomainObject(oid);
     }
 
-    protected <T extends Object> T getRenderedObject() {
+    protected <T> T getRenderedObject() {
         final IViewState viewState = RenderUtils.getViewState();
-        return (T) getRenderedObject(viewState);
+        return getRenderedObject(viewState);
     }
 
-    protected <T extends Object> T getRenderedObject(final String id) {
+    protected <T> T getRenderedObject(final String id) {
         final IViewState viewState = RenderUtils.getViewState(id);
-        return (T) getRenderedObject(viewState);
+        return getRenderedObject(viewState);
     }
 
-    protected <T extends Object> T getRenderedObject(final IViewState viewState) {
+    @SuppressWarnings("unchecked")
+    protected <T> T getRenderedObject(final IViewState viewState) {
         if (viewState != null) {
             MetaObject metaObject = viewState.getMetaObject();
             if (metaObject != null) {
@@ -123,38 +111,28 @@ public abstract class BaseAction extends DispatchAction {
 
     protected ActionForward download(final HttpServletResponse response, final String filename, final byte[] bytes,
             final String contentType) throws IOException {
-        final OutputStream outputStream = response.getOutputStream();
-        response.setContentType(contentType);
-        response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"));
-        response.setContentLength(bytes.length);
-        if (bytes != null) {
+        try (final OutputStream outputStream = response.getOutputStream()) {
+            response.setContentType(contentType);
+            response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"));
+            response.setContentLength(bytes.length);
             outputStream.write(bytes);
+            outputStream.flush();
+            return null;
         }
-        outputStream.flush();
-        outputStream.close();
-
-        return null;
-
     }
 
     protected ActionForward download(final HttpServletResponse response, final String filename, InputStream stream,
             final String contentType) throws IOException {
-        final OutputStream outputStream = response.getOutputStream();
-        try {
+        try (OutputStream outputStream = response.getOutputStream()) {
             response.setContentType(contentType);
             response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"));
             int byteCount = InputStreamUtil.copyStream(stream, outputStream);
             response.setContentLength(byteCount);
             outputStream.flush();
+            return null;
         } finally {
-            outputStream.close();
             stream.close();
         }
-        return null;
-    }
-
-    protected Bennu getBennu() {
-        return Bennu.getInstance();
     }
 
     protected void addLocalizedMessage(final HttpServletRequest request, final String localizedMessage) {
@@ -209,6 +187,10 @@ public abstract class BaseAction extends DispatchAction {
             exc.printStackTrace();
             addLocalizedMessage(request, BundleUtil.getString("resources/MyorgResources", "error.ConsistencyException"));
         }
+    }
+
+    protected ActionForward forward(String path) {
+        return new ActionForward(path);
     }
 
 }

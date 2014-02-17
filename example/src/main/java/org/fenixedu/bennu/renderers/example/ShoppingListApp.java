@@ -7,7 +7,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.fenixedu.bennu.core.domain.Bennu;
-import org.fenixedu.bennu.core.presentationTier.actions.ContextBaseAction;
+import org.fenixedu.bennu.core.presentationTier.actions.BaseAction;
 import org.fenixedu.bennu.portal.EntryPoint;
 import org.fenixedu.bennu.portal.StrutsApplication;
 import org.fenixedu.bennu.portal.StrutsFunctionality;
@@ -24,22 +24,22 @@ import pt.ist.fenixWebFramework.struts.annotations.Mapping;
 @StrutsFunctionality(application = ShoppingListApp.class, bundle = "resources.ExampleResources",
         descriptionKey = "title.example.shoppinglist.list.description", path = "list",
         titleKey = "title.example.shoppinglist.list")
-public class ShoppingListApp extends ContextBaseAction {
+public class ShoppingListApp extends BaseAction {
 
     @EntryPoint
     public ActionForward list(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
         request.setAttribute("list", Bennu.getInstance().getShoppingListSet());
-        return forward(request, "/example/shoppinglist.jsp");
+        return forward("/example/shoppinglist.jsp");
     }
 
     public ActionForward create(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
-        return forward(request, "/example/createShoppinglist.jsp");
+        return forward("/example/createShoppinglist.jsp");
     }
 
     public ActionForward view(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
         ShoppingList list = getDomainObject(request, "listId");
         request.setAttribute("list", list);
-        return forward(request, "/example/viewShoppinglist.jsp");
+        return forward("/example/viewShoppinglist.jsp");
     }
 
     public ActionForward delete(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
@@ -50,7 +50,7 @@ public class ShoppingListApp extends ContextBaseAction {
         ShoppingListItem item = getRenderedObject("create");
         RenderUtils.invalidateViewState();
         request.setAttribute("list", item.getShoppingList());
-        return forward(request, "/example/viewShoppinglist.jsp");
+        return forward("/example/viewShoppinglist.jsp");
     }
 
 }
