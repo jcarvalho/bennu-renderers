@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StrutsFunctionality {
 
-    Class<?> application();
+    Class<?> app();
 
     String path();
 
@@ -17,7 +17,7 @@ public @interface StrutsFunctionality {
 
     String titleKey();
 
-    String descriptionKey();
+    String descriptionKey() default RenderersAnnotationProcessor.INFER_VALUE;
 
     String accessGroup() default "anyone";
 

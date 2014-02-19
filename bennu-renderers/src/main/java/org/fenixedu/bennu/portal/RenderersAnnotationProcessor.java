@@ -26,7 +26,8 @@ import pt.ist.fenixWebFramework.struts.plugin.StrutsAnnotationsPlugIn;
 @HandlesTypes({ Mapping.class, StrutsApplication.class, StrutsFunctionality.class })
 public class RenderersAnnotationProcessor implements ServletContainerInitializer {
 
-    static final String DELEGATE_TO_PARENT = "DELEGATE_TO_PARENT";
+    static final String DELEGATE_TO_PARENT = "$DELEGATE_TO_PARENT$";
+    static final String INFER_VALUE = "$INFER_VALUE$";
 
     private static final Map<Class<?>, Functionality> functionalityClasses = new HashMap<Class<?>, Functionality>();
 
@@ -47,23 +48,27 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                 }
                 StrutsFunctionality functionality = type.getAnnotation(StrutsFunctionality.class);
                 if (functionality != null) {
-                    String bundle = findBundleForFunctionality(type);
+                    String bundle = "resources." + findBundleForFunctionality(type);
                     LocalizedString title = BundleUtil.getLocalizedString(bundle, functionality.titleKey());
-                    LocalizedString description = BundleUtil.getLocalizedString(bundle, functionality.descriptionKey());
+                    LocalizedString description =
+                            functionality.descriptionKey().equals(INFER_VALUE) ? title : BundleUtil.getLocalizedString(bundle,
+                                    functionality.descriptionKey());
                     functionalityClasses.put(type, new Functionality(StrutsPortalBackend.BACKEND_KEY, computePath(type),
                             functionality.path(), functionality.accessGroup(), title, description));
                 }
                 StrutsApplication application = type.getAnnotation(StrutsApplication.class);
                 if (application != null) {
-                    String bundle = application.bundle();
+                    String bundle = "resources." + application.bundle();
                     LocalizedString title = BundleUtil.getLocalizedString(bundle, application.titleKey());
-                    LocalizedString description = BundleUtil.getLocalizedString(bundle, application.descriptionKey());
+                    LocalizedString description =
+                            application.descriptionKey().equals(INFER_VALUE) ? title : BundleUtil.getLocalizedString(bundle,
+                                    application.descriptionKey());
                     applicationClasses.put(type, new Application(type.getName(), application.path(), application.accessGroup(),
                             title, description));
                 }
             }
             for (Entry<Class<?>, Functionality> entry : functionalityClasses.entrySet()) {
-                Application app = applicationClasses.get(entry.getKey().getAnnotation(StrutsFunctionality.class).application());
+                Application app = applicationClasses.get(entry.getKey().getAnnotation(StrutsFunctionality.class).app());
                 if (app == null) {
                     throw new Error("Functionality " + entry.getKey().getName() + " does not have a defined application");
                 }
@@ -89,7 +94,7 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
     private String findBundleForFunctionality(Class<?> type) {
         StrutsFunctionality functionality = type.getAnnotation(StrutsFunctionality.class);
         if (functionality.bundle().equals(DELEGATE_TO_PARENT)) {
-            return functionality.application().getAnnotation(StrutsApplication.class).bundle();
+            return functionality.app().getAnnotation(StrutsApplication.class).bundle();
         } else {
             return functionality.bundle();
         }

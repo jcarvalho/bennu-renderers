@@ -15,7 +15,7 @@ public @interface StrutsApplication {
 
     String titleKey();
 
-    String descriptionKey();
+    String descriptionKey() default RenderersAnnotationProcessor.INFER_VALUE;
 
     String accessGroup() default "anyone";
 
