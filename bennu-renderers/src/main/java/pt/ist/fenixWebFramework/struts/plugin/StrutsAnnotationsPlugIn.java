@@ -22,6 +22,7 @@ import org.apache.struts.config.FormBeanConfig;
 import org.apache.struts.config.MessageResourcesConfig;
 import org.apache.struts.config.ModuleConfig;
 
+import pt.ist.fenixWebFramework.renderers.plugin.RenderersRequestProcessor;
 import pt.ist.fenixWebFramework.struts.annotations.ExceptionHandling;
 import pt.ist.fenixWebFramework.struts.annotations.Exceptions;
 import pt.ist.fenixWebFramework.struts.annotations.Forward;
@@ -68,6 +69,9 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
 
         final String modulePrefix = CharMatcher.is('/').trimLeadingFrom(config.getPrefix());
 
+        boolean isTilesModule =
+                config.getControllerConfig().getProcessorClass().equals(RenderersRequestProcessor.class.getName());
+
         for (Class<?> actionClass : actionClasses) {
             Mapping mapping = actionClass.getAnnotation(Mapping.class);
             if (mapping == null || !modulePrefix.equals(mapping.module())) {
@@ -100,10 +104,10 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             Forwards forwards = actionClass.getAnnotation(Forwards.class);
             if (forwards != null) {
                 for (final Forward forward : forwards.value()) {
-                    registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName);
+                    registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName, isTilesModule);
                 }
             }
-            registerSuperclassForwards(actionMapping, actionClass.getSuperclass(), mapping, defaultResourcesName);
+            registerSuperclassForwards(actionMapping, actionClass.getSuperclass(), mapping, defaultResourcesName, isTilesModule);
 
             Exceptions exceptions = actionClass.getAnnotation(Exceptions.class);
             if (exceptions != null) {
@@ -138,7 +142,7 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
     }
 
     private static void registerSuperclassForwards(final ActionMapping actionMapping, Class<?> superclass, Mapping mapping,
-            String defaultResourcesName) {
+            String defaultResourcesName, boolean isTilesModule) {
         if (UPPER_BOUND_SUPERCLASSES.contains(superclass.getSimpleName())) {
             return;
         }
@@ -151,10 +155,10 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
                 actionMapping.findForward(forward.name());
             } catch (NullPointerException ex) {
                 // Forward wasn't registered in any subclass, so register it.
-                registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName);
+                registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName, isTilesModule);
             }
         }
-        registerSuperclassForwards(actionMapping, superclass.getSuperclass(), mapping, defaultResourcesName);
+        registerSuperclassForwards(actionMapping, superclass.getSuperclass(), mapping, defaultResourcesName, isTilesModule);
     }
 
     private static void registerInput(final ActionMapping actionMapping, String input) {
@@ -169,8 +173,8 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
     }
 
     private static void registerForward(final ActionMapping actionMapping, final Forward forward, Forwards forwards,
-            Mapping mapping, String defaultResourcesName) {
-        if (forward.useTile() && isSimplePageFile(forward.path())) {
+            Mapping mapping, String defaultResourcesName, boolean isTilesModule) {
+        if (isTilesModule && forward.useTile() && isSimplePageFile(forward.path())) {
             PartialTileDefinition tileDefinition = new PartialTileDefinition(forward, forwards, mapping, defaultResourcesName);
             FenixDefinitionsFactory.registerDefinition(tileDefinition);
             actionMapping.addForwardConfig(new ActionForward(forward.name(), tileDefinition.getName(), forward.redirect(),
