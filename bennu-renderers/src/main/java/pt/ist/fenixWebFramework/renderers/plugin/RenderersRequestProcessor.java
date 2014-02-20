@@ -13,6 +13,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.tiles.TilesRequestProcessor;
+import org.fenixedu.bennu.portal.StrutsPortalBackend;
 
 import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 import pt.ist.fenixWebFramework._development.LogLevel;
@@ -73,7 +74,7 @@ public class RenderersRequestProcessor extends TilesRequestProcessor {
     @Override
     protected ActionForward processActionPerform(HttpServletRequest request, HttpServletResponse response, Action action,
             ActionForm form, ActionMapping mapping) throws IOException, ServletException {
-        SimpleRenderersRequestProcessor.chooseSelectedFunctionality(request, action);
+        StrutsPortalBackend.chooseSelectedFunctionality(request, action.getClass());
         RenderersRequestProcessorImpl.currentRequest.set(RenderersRequestProcessorImpl.parseMultipartRequest(request, form));
         HttpServletRequest initialRequest = RenderersRequestProcessorImpl.currentRequest.get();
 

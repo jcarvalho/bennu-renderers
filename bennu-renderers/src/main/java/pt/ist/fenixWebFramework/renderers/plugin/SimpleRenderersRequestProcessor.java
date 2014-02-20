@@ -13,13 +13,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.RequestProcessor;
-import org.fenixedu.bennu.portal.RenderersAnnotationProcessor;
 import org.fenixedu.bennu.portal.StrutsPortalBackend;
-import org.fenixedu.bennu.portal.domain.MenuFunctionality;
-import org.fenixedu.bennu.portal.model.Functionality;
-import org.fenixedu.bennu.portal.servlet.BennuPortalDispatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 import pt.ist.fenixWebFramework._development.LogLevel;
@@ -52,8 +46,6 @@ import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
  */
 public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimpleRenderersRequestProcessor.class);
-
     @Override
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         RenderersRequestProcessorImpl.currentRequest.set(request);
@@ -83,7 +75,7 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
     @Override
     protected ActionForward processActionPerform(HttpServletRequest request, HttpServletResponse response, Action action,
             ActionForm form, ActionMapping mapping) throws IOException, ServletException {
-        chooseSelectedFunctionality(request, action);
+        StrutsPortalBackend.chooseSelectedFunctionality(request, action.getClass());
         RenderersRequestProcessorImpl.currentRequest.set(RenderersRequestProcessorImpl.parseMultipartRequest(request, form));
         HttpServletRequest initialRequest = RenderersRequestProcessorImpl.currentRequest.get();
 
@@ -132,23 +124,6 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
             return super.processActionPerform(request, response, action, form, mapping);
         }
 
-    }
-
-    static void chooseSelectedFunctionality(HttpServletRequest request, Action action) {
-        if (request.getAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY) == null) {
-            Functionality model = RenderersAnnotationProcessor.getFunctionalityForType(action.getClass());
-            if (model == null) {
-                logger.warn("Could not map {} to a functionality!", action.getClass().getName());
-                return;
-            }
-            MenuFunctionality functionality =
-                    MenuFunctionality.findFunctionality(StrutsPortalBackend.BACKEND_KEY, model.getKey());
-            if (functionality == null) {
-                logger.warn("Trying to access a not installed functionality!");
-            }
-            logger.debug("Selected MenuFunctionality {}", functionality);
-            request.setAttribute(BennuPortalDispatcher.SELECTED_FUNCTIONALITY, functionality);
-        }
     }
 
 }
