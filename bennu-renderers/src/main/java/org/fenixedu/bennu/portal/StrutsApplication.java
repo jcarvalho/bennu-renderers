@@ -19,4 +19,9 @@ public @interface StrutsApplication {
 
     String accessGroup() default "anyone";
 
+    /*
+     * Hint that is used to group Applications in the management UI
+     */
+    String hint() default "Struts";
+
 }

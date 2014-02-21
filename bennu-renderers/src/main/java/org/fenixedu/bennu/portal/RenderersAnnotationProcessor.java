@@ -64,7 +64,7 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                             application.descriptionKey().equals(INFER_VALUE) ? title : BundleUtil.getLocalizedString(bundle,
                                     application.descriptionKey());
                     applicationClasses.put(type, new Application(type.getName(), application.path(), application.accessGroup(),
-                            title, description));
+                            title, description, application.hint()));
                 }
             }
             for (Entry<Class<?>, Functionality> entry : functionalityClasses.entrySet()) {
