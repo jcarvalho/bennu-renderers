@@ -63,12 +63,22 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                     LocalizedString description =
                             application.descriptionKey().equals(INFER_VALUE) ? title : BundleUtil.getLocalizedString(bundle,
                                     application.descriptionKey());
-                    applicationClasses.put(type, new Application(type.getName(), application.path(), application.accessGroup(),
-                            title, description, application.hint()));
+                    Application app =
+                            new Application(type.getName(), application.path(), application.accessGroup(), title, description,
+                                    application.hint());
+                    applicationClasses.put(type, app);
+
+                    // Register "Start-Page" functionality
+                    if (functionality == null && mapping != null) {
+                        registerStartPage(type, app);
+                    }
                 }
             }
             for (Entry<Class<?>, Functionality> entry : functionalityClasses.entrySet()) {
-                Application app = applicationClasses.get(entry.getKey().getAnnotation(StrutsFunctionality.class).app());
+                Class<?> applicationClass =
+                        entry.getKey().isAnnotationPresent(StrutsApplication.class) ? entry.getKey() : entry.getKey()
+                                .getAnnotation(StrutsFunctionality.class).app();
+                Application app = applicationClasses.get(applicationClass);
                 if (app == null) {
                     throw new Error("Functionality " + entry.getKey().getName() + " does not have a defined application");
                 }
@@ -89,6 +99,14 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
                 functionalityClasses.put(type, functionality);
             }
         }
+    }
+
+    private void registerStartPage(Class<?> type, Application app) {
+        LocalizedString title = BundleUtil.getLocalizedString("resources.RendererResources", "label.start.page");
+        final Functionality functionality =
+                new Functionality(StrutsPortalBackend.BACKEND_KEY, computePath(type), "start-page", app.getAccessGroup(), title,
+                        title, false);
+        functionalityClasses.put(type, functionality);
     }
 
     private String findBundleForFunctionality(Class<?> type) {
