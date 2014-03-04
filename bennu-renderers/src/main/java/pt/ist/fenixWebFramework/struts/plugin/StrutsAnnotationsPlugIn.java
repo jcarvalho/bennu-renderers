@@ -97,7 +97,7 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             if (mapping.input().isEmpty()) {
                 actionMapping.setInput(findInputMethod(actionClass, mapping));
             } else {
-                registerInput(actionMapping, mapping.input());
+                registerInput(actionMapping, mapping.input(), isTilesModule);
             }
 
             String defaultResourcesName = getDefaultResourcesName(config);
@@ -115,6 +115,7 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             }
 
             config.addActionConfig(actionMapping);
+
         }
     }
 
@@ -147,22 +148,21 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             return;
         }
         Forwards forwards = superclass.getAnnotation(Forwards.class);
-        if (forwards == null) {
-            return;
-        }
-        for (final Forward forward : forwards.value()) {
-            try {
-                actionMapping.findForward(forward.name());
-            } catch (NullPointerException ex) {
-                // Forward wasn't registered in any subclass, so register it.
-                registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName, isTilesModule);
+        if (forwards != null) {
+            for (final Forward forward : forwards.value()) {
+                try {
+                    actionMapping.findForward(forward.name());
+                } catch (NullPointerException ex) {
+                    // Forward wasn't registered in any subclass, so register it.
+                    registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName, isTilesModule);
+                }
             }
         }
         registerSuperclassForwards(actionMapping, superclass.getSuperclass(), mapping, defaultResourcesName, isTilesModule);
     }
 
-    private static void registerInput(final ActionMapping actionMapping, String input) {
-        if (isSimplePageFile(input)) {
+    private static void registerInput(final ActionMapping actionMapping, String input, boolean isTilesModule) {
+        if (isTilesModule && isSimplePageFile(input)) {
             PartialTileDefinition tileDefinition = new PartialTileDefinition(input);
             FenixDefinitionsFactory.registerDefinition(tileDefinition);
             actionMapping.setInput(tileDefinition.getName());
