@@ -36,7 +36,8 @@
     <modules>
         <module>bennu-renderers</module>
         <module>example</module>
-    </modules>
+    <module>benchmarks</module>
+  </modules>
 
     <repositories>
         <repository>
