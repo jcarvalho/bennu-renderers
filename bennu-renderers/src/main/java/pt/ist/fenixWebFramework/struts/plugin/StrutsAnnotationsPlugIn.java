@@ -5,9 +5,13 @@ package pt.ist.fenixWebFramework.struts.plugin;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletException;
 
@@ -21,6 +25,7 @@ import org.apache.struts.config.ExceptionConfig;
 import org.apache.struts.config.FormBeanConfig;
 import org.apache.struts.config.MessageResourcesConfig;
 import org.apache.struts.config.ModuleConfig;
+import org.fenixedu.bennu.portal.RenderersAnnotationProcessor;
 
 import pt.ist.fenixWebFramework.renderers.plugin.RenderersRequestProcessor;
 import pt.ist.fenixWebFramework.struts.annotations.ExceptionHandling;
@@ -69,6 +74,11 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
 
         final String modulePrefix = CharMatcher.is('/').trimLeadingFrom(config.getPrefix());
 
+        int fromXML = config.findActionConfigs().length;
+
+        actionsPerModule.put(modulePrefix, new AtomicInteger(fromXML));
+        orphansPerModule.put(modulePrefix, new AtomicInteger(fromXML));
+
         boolean isTilesModule =
                 config.getControllerConfig().getProcessorClass().equals(RenderersRequestProcessor.class.getName());
 
@@ -77,6 +87,8 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             if (mapping == null || !modulePrefix.equals(mapping.module())) {
                 continue;
             }
+
+            actionsPerModule.get(modulePrefix).incrementAndGet();
 
             final ActionMapping actionMapping = new ActionMapping();
 
@@ -116,7 +128,29 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
 
             config.addActionConfig(actionMapping);
 
+            if (RenderersAnnotationProcessor.getFunctionalityForType(actionClass) == null) {
+                orphansPerModule.get(modulePrefix).incrementAndGet();
+                if (!isTilesModule) {
+                    System.out.println("\tAction " + actionClass.getName() + " is orphan!");
+                }
+            }
         }
+    }
+
+    private static final Map<String, AtomicInteger> actionsPerModule = new HashMap<>();
+    private static final Map<String, AtomicInteger> orphansPerModule = new HashMap<>();
+
+    public static void dumpStats() {
+        int total = 0, orphans = 0, modules = 0;
+        for (Entry<String, AtomicInteger> entry : actionsPerModule.entrySet()) {
+            modules++;
+            int thisOrphans = orphansPerModule.get(entry.getKey()).get();
+            System.out.println("Module: " + entry.getKey() + " has " + entry.getValue() + " actions and " + thisOrphans
+                    + " orphans");
+            total += entry.getValue().get();
+            orphans += thisOrphans;
+        }
+        System.out.printf("Total actions: %d, total orphans: %d, total modules %d\n", total, orphans, modules);
     }
 
     private static void registerExceptionHandling(final ActionMapping actionMapping, Exceptions exceptions) {
