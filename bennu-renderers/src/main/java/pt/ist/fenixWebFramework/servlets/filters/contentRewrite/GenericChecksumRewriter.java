@@ -387,7 +387,7 @@ public final class GenericChecksumRewriter {
 
     private int findFormActionBodyStart(final StringBuilder source, final int offset, final int limit) {
         final int indexOfHref = source.indexOf("action=", offset);
-        if (indexOfHref >= limit) {
+        if (indexOfHref < 0 || indexOfHref >= limit) {
             return -1;
         }
         final int nextChar = indexOfHref + 7;
@@ -433,7 +433,7 @@ public final class GenericChecksumRewriter {
 
     private int findHrefBodyStart(final StringBuilder source, final int offset, int limit) {
         final int indexOfHref = source.indexOf("href=", offset);
-        if (indexOfHref >= limit) {
+        if (indexOfHref < 0 || indexOfHref >= limit) {
             return -1;
         }
         final int nextChar = indexOfHref + 5;
@@ -442,7 +442,7 @@ public final class GenericChecksumRewriter {
 
     private int findSrcBodyStart(final StringBuilder source, final int offset, int limit) {
         final int indexOfHref = source.indexOf("src=", offset);
-        if (indexOfHref >= limit) {
+        if (indexOfHref < 0 || indexOfHref >= limit) {
             return -1;
         }
         final int nextChar = indexOfHref + 5;
