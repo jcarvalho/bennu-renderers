@@ -30,7 +30,7 @@ public class CheckRewriterTest {
     }
 
     private void checkNoChange(String value) {
-        assertThat(EMPTY_REWRITER.rewrite(new StringBuilder(value)).toString(), is(value));
+        assertThat(EMPTY_REWRITER.rewrite(value), is(value));
     }
 
 }

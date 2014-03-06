@@ -44,7 +44,7 @@ public class ChecksumBenchmarks {
     @Threads(value = Threads.MAX)
     @GenerateMicroBenchmark
     public void testMethod() {
-        rewriter.rewrite(new StringBuilder(contents));
+        rewriter.rewrite(contents);
     }
 
     private static String getIt() {
