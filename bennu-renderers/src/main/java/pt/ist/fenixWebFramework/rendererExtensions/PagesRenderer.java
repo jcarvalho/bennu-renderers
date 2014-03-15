@@ -24,7 +24,7 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObject;
 import pt.ist.fenixWebFramework.renderers.model.MetaObjectFactory;
 import pt.ist.fenixWebFramework.renderers.schemas.Schema;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
-import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
+import pt.ist.fenixWebFramework.renderers.utils.RenderKit.RenderMode;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 import pt.ist.fenixframework.DomainObject;
 
@@ -66,7 +66,7 @@ public class PagesRenderer extends InputRenderer {
         MetaObject listMetaObject = MetaObjectFactory.createObject(objects, schema);
 
         PresentationContext context = getContext().createSubContext(listMetaObject);
-        context.setRenderMode(RenderMode.getMode("output"));
+        context.setRenderMode(RenderMode.OUTPUT);
 
         HtmlTable table = (HtmlTable) RenderKit.getInstance().renderUsing(getRenderer(), context, objects, objects.getClass());
         return decorateTable(table, objects);
@@ -159,7 +159,7 @@ public class PagesRenderer extends InputRenderer {
 
     public static class PreviousController extends HtmlSubmitButtonController {
 
-        private HtmlSimpleValueComponent component;
+        private final HtmlSimpleValueComponent component;
 
         public PreviousController(HtmlSimpleValueComponent component) {
             super();
@@ -195,7 +195,7 @@ public class PagesRenderer extends InputRenderer {
 
     public static class NextController extends HtmlSubmitButtonController {
 
-        private HtmlSimpleValueComponent component;
+        private final HtmlSimpleValueComponent component;
 
         public NextController(HtmlSimpleValueComponent component) {
             super();
@@ -230,8 +230,8 @@ public class PagesRenderer extends InputRenderer {
 
     public static class ButtonsController extends HtmlSubmitButtonController {
 
-        private HtmlSimpleValueComponent component;
-        private MetaObject metaObject;
+        private final HtmlSimpleValueComponent component;
+        private final MetaObject metaObject;
 
         public ButtonsController(MetaObject metaObject, HtmlSimpleValueComponent component) {
             this.component = component;

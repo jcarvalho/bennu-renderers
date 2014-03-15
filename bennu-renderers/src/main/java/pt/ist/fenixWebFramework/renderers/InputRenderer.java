@@ -12,7 +12,7 @@ import pt.ist.fenixWebFramework.renderers.contexts.InputContext;
 import pt.ist.fenixWebFramework.renderers.contexts.PresentationContext;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
-import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
+import pt.ist.fenixWebFramework.renderers.utils.RenderKit.RenderMode;
 import pt.ist.fenixWebFramework.renderers.validators.HtmlChainValidator;
 import pt.ist.fenixWebFramework.renderers.validators.HtmlValidator;
 
@@ -79,7 +79,7 @@ public abstract class InputRenderer extends Renderer {
         newContext.setProperties(slot.getProperties());
 
         if (slot.isReadOnly()) {
-            newContext.setRenderMode(RenderMode.getMode("output"));
+            newContext.setRenderMode(RenderMode.OUTPUT);
         }
 
         Object value = slot.getObject();

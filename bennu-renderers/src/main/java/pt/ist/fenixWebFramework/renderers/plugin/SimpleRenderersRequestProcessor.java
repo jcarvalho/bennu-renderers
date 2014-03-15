@@ -1,8 +1,7 @@
 package pt.ist.fenixWebFramework.renderers.plugin;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -16,12 +15,14 @@ import org.apache.struts.action.RequestProcessor;
 import org.fenixedu.bennu.portal.StrutsPortalBackend;
 
 import pt.ist.fenixWebFramework.RenderersConfigurationManager;
-import pt.ist.fenixWebFramework._development.LogLevel;
 import pt.ist.fenixWebFramework.renderers.components.state.ComponentLifeCycle;
-import pt.ist.fenixWebFramework.renderers.components.state.EditRequest.ViewStateUserChangedException;
+import pt.ist.fenixWebFramework.renderers.components.state.ComponentLifeCycle.ViewStateUserChangedException;
 import pt.ist.fenixWebFramework.renderers.components.state.IViewState;
+import pt.ist.fenixWebFramework.renderers.components.state.LifeCycleConstants;
 import pt.ist.fenixWebFramework.renderers.components.state.ViewDestination;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
+import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
+import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter.FenixHttpServletRequestWrapper;
 
 /**
  * The standard renderers request processor. This processor is responsible for
@@ -35,28 +36,23 @@ import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
  * {@link pt.ist.fenixWebFramework.renderers.plugin.ExceptionHandler} interface.
  * 
  * <p>
- * The processor ensures that the current request and context are available through {@link #getCurrentRequest()} and
- * {@link #getCurrentContext()} respectively during the entire request lifetime. The processor also process multipart requests to
- * allow any renderer to retrieve on uploaded file with {@link #getUploadedFile(String)}.
- * 
- * <p>
- * This processor extends the tiles processor to easily integrate in an application that uses the tiles plugin.
+ * The processor ensures that the current request is available through {@link #getCurrentRequest()} during the entire request
+ * lifetime. The processor also process multipart requests to allow any renderer to retrieve on uploaded file with
+ * {@link #getUploadedFile(String)}.
  * 
  * @author cfgi
  */
 public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
+    private static ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<HttpServletRequest>();
+
     @Override
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        RenderersRequestProcessorImpl.currentRequest.set(request);
-        RenderersRequestProcessorImpl.currentContext.set(getServletContext());
-
         try {
+            currentRequest.set(request);
             super.process(request, response);
         } finally {
-            RenderersRequestProcessorImpl.currentRequest.set(null);
-            RenderersRequestProcessorImpl.currentContext.set(null);
-            RenderersRequestProcessorImpl.fileItems.set(null);
+            currentRequest.remove();
         }
     }
 
@@ -64,26 +60,19 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
     protected Action processActionCreate(HttpServletRequest request, HttpServletResponse response, ActionMapping mapping)
             throws IOException {
         Action action = super.processActionCreate(request, response, mapping);
-
-        if (action == null) {
-            return new VoidAction();
-        }
-
-        return action;
+        return action == null ? new Action() : action;
     }
 
     @Override
     protected ActionForward processActionPerform(HttpServletRequest request, HttpServletResponse response, Action action,
             ActionForm form, ActionMapping mapping) throws IOException, ServletException {
         StrutsPortalBackend.chooseSelectedFunctionality(request, action.getClass());
-        RenderersRequestProcessorImpl.currentRequest.set(RenderersRequestProcessorImpl.parseMultipartRequest(request, form));
-        HttpServletRequest initialRequest = RenderersRequestProcessorImpl.currentRequest.get();
 
-        if (RenderersRequestProcessorImpl.hasViewState(initialRequest)) {
+        if (hasViewState(request)) {
             try {
-                RenderersRequestProcessorImpl.setViewStateProcessed(request);
+                setViewStateProcessed(request);
 
-                ActionForward forward = ComponentLifeCycle.execute(initialRequest);
+                ActionForward forward = ComponentLifeCycle.execute(request);
                 if (forward != null) {
                     return forward;
                 }
@@ -93,11 +82,6 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
                 response.sendRedirect(RenderersConfigurationManager.getConfiguration().tamperingRedirect());
                 return null;
             } catch (Exception e) {
-                if (LogLevel.WARN) {
-                    System.out.println(SimpleDateFormat.getInstance().format(new Date()));
-                }
-                e.printStackTrace();
-
                 if (action instanceof ExceptionHandler) {
                     ExceptionHandler handler = (ExceptionHandler) action;
 
@@ -112,18 +96,36 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
                     ActionForward forward = handler.processException(request, mapping, input, e);
                     if (forward != null) {
                         return forward;
-                    } else {
-//			return processException(request, response, e, form, mapping);
                     }
-                } else {
-//		    return processException(request, response, e, form, mapping);
                 }
                 throw new ServletException(e);
             }
         } else {
             return super.processActionPerform(request, response, action, form, mapping);
         }
+    }
 
+    public static HttpServletRequest getCurrentRequest() {
+        return currentRequest.get();
+    }
+
+    /**
+     * @return the form file associated with the given field name or <code>null</code> if no file exists
+     */
+    @SuppressWarnings("unchecked")
+    public static UploadedFile getUploadedFile(String fieldName) {
+        Map<String, UploadedFile> files =
+                (Map<String, UploadedFile>) getCurrentRequest().getAttribute(FenixHttpServletRequestWrapper.ITEM_MAP_ATTRIBUTE);
+        return files.get(fieldName);
+    }
+
+    protected static boolean hasViewState(HttpServletRequest request) {
+        return request.getAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME) == null
+                && request.getParameterValues(LifeCycleConstants.VIEWSTATE_PARAM_NAME) != null;
+    }
+
+    protected static void setViewStateProcessed(HttpServletRequest request) {
+        request.setAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME, true);
     }
 
 }

@@ -17,7 +17,7 @@ public class MetaSlotWithDefault extends MetaSlot {
         if (this.createValue) {
             this.createValue = false;
 
-            setObject(createDefault(getType(), getDefaultValue()));
+            setObject(DefaultValues.createValue(getType(), getDefaultValue()));
         }
 
         return super.getObject();
@@ -31,14 +31,7 @@ public class MetaSlotWithDefault extends MetaSlot {
 
     @Override
     public Class getType() {
-        Class type = getMetaObject().getType();
-
-        return RendererPropertyUtils.getPropertyType(type, getName());
-    }
-
-    protected Object createDefault(Class type, String defaultValue) {
-        DefaultValues instance = DefaultValues.getInstance();
-        return instance.createValue(type, defaultValue);
+        return RendererPropertyUtils.getPropertyType(getMetaObject().getType(), getName());
     }
 
 }

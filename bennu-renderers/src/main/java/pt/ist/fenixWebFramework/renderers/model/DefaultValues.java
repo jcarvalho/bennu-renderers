@@ -1,204 +1,129 @@
 package pt.ist.fenixWebFramework.renderers.model;
 
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pt.ist.fenixWebFramework._development.LogLevel;
 import pt.ist.fenixWebFramework.renderers.utils.ClassHierarchyTable;
+import pt.ist.fenixframework.DomainObject;
 
-// TODO: This needs revision. It's problably an horrible way of creating default values for types
+import com.google.common.base.Strings;
+
 public class DefaultValues {
 
-    private static Logger logger = LoggerFactory.getLogger(DefaultValues.class);
-
-    protected static DefaultValues instance;
-
-    public static abstract class ValueCreator {
-        public abstract Object createValue(Class type, String defaultValue);
+    private static interface ValueCreator<T> {
+        T createValue(Class<T> type, String defaultValue);
     }
 
-    private static ClassHierarchyTable<ValueCreator> defaultValues = new ClassHierarchyTable<ValueCreator>();
+    private static final ClassHierarchyTable<ValueCreator<?>> defaultValues = new ClassHierarchyTable<>();
 
-    protected DefaultValues() {
-        Method[] methods = getClass().getMethods();
+    static {
+        defaultValues.put(Object.class, new ValueCreator<Object>() {
+            @Override
+            public Object createValue(Class<Object> type, String defaultValue) {
+                return null;
+            }
+        });
+        defaultValues.put(String.class, new ValueCreator<String>() {
+            @Override
+            public String createValue(Class<String> type, String defaultValue) {
+                return defaultValue != null ? defaultValue : "";
+            }
+        });
+        defaultValues.put(Number.class, new ValueCreator<Number>() {
+            @Override
+            public Number createValue(Class<Number> type, String defaultValue) {
+                if (Strings.isNullOrEmpty(defaultValue)) {
+                    return null;
+                }
 
-        for (final Method m : methods) {
-            if (m.getName().startsWith("createValue")) {
-                Class[] parameters = m.getParameterTypes();
-
-                if (parameters.length == 3 && parameters[1].equals(Class.class) && parameters[2].equals(String.class)) {
-                    Class type = parameters[0];
-
+                try {
+                    return new Integer(defaultValue != null ? defaultValue : "0");
+                } catch (NumberFormatException e) {
                     try {
-                        registerCreator(type, new ValueCreator() {
-                            @Override
-                            public Object createValue(Class type, String defaultValue) {
-                                try {
-                                    return m.invoke(DefaultValues.this, new Object[] { null, type, defaultValue });
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-
-                                return null;
-                            }
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        return new Float(defaultValue != null ? defaultValue : "0.0");
+                    } catch (NumberFormatException e1) {
                     }
                 }
+
+                return new Integer(0);
             }
-        }
+        });
+        defaultValues.put(Integer.class, new ValueCreator<Integer>() {
+            @Override
+            public Integer createValue(Class<Integer> type, String defaultValue) {
+                if (Strings.isNullOrEmpty(defaultValue)) {
+                    return null;
+                }
+
+                try {
+                    return new Integer(defaultValue != null ? defaultValue : "0");
+                } catch (NumberFormatException e) {
+                }
+
+                return new Integer(0);
+            }
+        });
+        defaultValues.put(Float.class, new ValueCreator<Float>() {
+            @Override
+            public Float createValue(Class<Float> type, String defaultValue) {
+                if (Strings.isNullOrEmpty(defaultValue)) {
+                    return null;
+                }
+                try {
+                    return new Float(defaultValue != null ? defaultValue : "0.0");
+                } catch (NumberFormatException e) {
+                }
+
+                return new Float(0.0f);
+            }
+        });
+        defaultValues.put(Boolean.class, new ValueCreator<Boolean>() {
+            @Override
+            public Boolean createValue(Class<Boolean> type, String defaultValue) {
+                if (Strings.isNullOrEmpty(defaultValue)) {
+                    return null;
+                }
+                return Boolean.valueOf(defaultValue);
+            }
+        });
+        defaultValues.put(Date.class, new ValueCreator<Date>() {
+            @Override
+            public Date createValue(Class<Date> type, String defaultValue) {
+                if (Strings.isNullOrEmpty(defaultValue)) {
+                    return null;
+                }
+                try {
+                    return new SimpleDateFormat("dd/MM/yyyy").parse(defaultValue);
+                } catch (ParseException e) {
+                    return new Date();
+                }
+            }
+        });
+        defaultValues.put(Enum.class, new ValueCreator<Enum>() {
+            @Override
+            public Enum createValue(Class<Enum> type, String defaultValue) {
+                if (Strings.isNullOrEmpty(defaultValue)) {
+                    return null;
+                }
+
+                try {
+                    return Enum.valueOf(type, defaultValue);
+                } catch (Exception e) {
+                    return null;
+                }
+
+            }
+        });
+        defaultValues.put(DomainObject.class, new ValueCreator<DomainObject>() {
+            @Override
+            public DomainObject createValue(Class<DomainObject> type, String defaultValue) {
+                return null;
+            }
+        });
     }
 
-    //
-    // public interface
-    //
-
-    public void registerCreator(Class type, ValueCreator creator) {
-        defaultValues.put(type, creator);
-        if (LogLevel.INFO) {
-            logger.info("adding default value for type: " + type.getName());
-        }
-    }
-
-    public Object createValue(Class type) {
-        return defaultValues.get(type).createValue(type, null);
-    }
-
-    public Object createValue(Class type, String defaultValue) {
+    public static Object createValue(Class type, String defaultValue) {
         return defaultValues.get(type).createValue(type, defaultValue);
-    }
-
-    public static DefaultValues getInstance() {
-        if (DefaultValues.instance == null) {
-            DefaultValues.instance = new DefaultValues();
-        }
-
-        return DefaultValues.instance;
-    }
-
-    //
-    // Default creators
-    //
-    // Add a new default value: create a public method named createValue that takes 3 arguments. The first 
-    // is an argument of the type that will be created. The second is the class of the actual type for which 
-    // the value is required. The third argument is a string representing the default that should be used
-    // when creating the new value.
-    //
-    //The first argument will always have the null value when the method is called. 
-
-    private boolean isEmptyString(String value) {
-        return value == null || value.length() == 0;
-    }
-
-    public Object createValue(Object o, Class type, String defaultValue) throws InstantiationException, IllegalAccessException {
-        return null;//type.newInstance();
-    }
-
-    public String createValue(String s, Class type, String defaultValue) {
-        return defaultValue != null ? defaultValue : "";
-    }
-
-    public Number createValue(Number n, Class type, String defaultValue) {
-        if (isEmptyString(defaultValue)) {
-            return null;
-        }
-
-        try {
-            return new Integer(defaultValue != null ? defaultValue : "0");
-        } catch (NumberFormatException e) {
-            try {
-                return new Float(defaultValue != null ? defaultValue : "0.0");
-            } catch (NumberFormatException e1) {
-                if (LogLevel.WARN) {
-                    logger.warn("could not create number from default value '" + defaultValue + "': " + e1);
-                }
-                e1.printStackTrace();
-            }
-        }
-
-        return new Integer(0);
-    }
-
-    public Integer createValue(Integer i, Class type, String defaultValue) {
-        if (isEmptyString(defaultValue)) {
-            return null;
-        }
-
-        try {
-            return new Integer(defaultValue != null ? defaultValue : "0");
-        } catch (NumberFormatException e) {
-            if (LogLevel.WARN) {
-                logger.warn("could not create integer from default value '" + defaultValue + "': " + e);
-            }
-        }
-
-        return new Integer(0);
-    }
-
-    public Float createValue(Float n, Class type, String defaultValue) {
-        if (isEmptyString(defaultValue)) {
-            return null;
-        }
-
-        try {
-            return new Float(defaultValue != null ? defaultValue : "0.0");
-        } catch (NumberFormatException e) {
-            if (LogLevel.WARN) {
-                logger.warn("could not create float from default value '" + defaultValue + "': " + e);
-            }
-        }
-
-        return new Float(0.0f);
-    }
-
-    public Boolean createValue(Boolean b, Class type, String defaultValue) {
-        if (isEmptyString(defaultValue)) {
-            return null;
-        }
-
-        return new Boolean(defaultValue != null ? defaultValue : "false");
-    }
-
-    public Date createValue(Date d, Class type, String defaultValue) {
-        if (isEmptyString(defaultValue)) {
-            return null;
-        }
-
-        if (defaultValue != null) {
-            try {
-                return new SimpleDateFormat("dd/MM/yyyy").parse(defaultValue);
-            } catch (ParseException e) {
-                if (LogLevel.WARN) {
-                    logger.warn("could not create date from default value '" + defaultValue + "': " + e);
-                }
-                e.printStackTrace();
-            }
-        }
-
-        return new Date();
-    }
-
-    public Enum createValue(Enum e, Class type, String defaultValue) {
-        if (isEmptyString(defaultValue)) {
-            return null;
-        }
-
-        Object[] constants = type.getEnumConstants();
-
-        if (defaultValue != null) {
-            for (Object constant : constants) {
-                if (constant.toString().equals(defaultValue)) {
-                    return (Enum) constant;
-                }
-            }
-        }
-
-        return null;
     }
 }

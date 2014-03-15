@@ -3,39 +3,30 @@
  */
 package pt.ist.fenixWebFramework.struts.plugin;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletException;
 
+import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
 import org.apache.struts.action.ExceptionHandler;
 import org.apache.struts.action.PlugIn;
+import org.apache.struts.actions.DispatchAction;
 import org.apache.struts.config.ExceptionConfig;
 import org.apache.struts.config.FormBeanConfig;
-import org.apache.struts.config.MessageResourcesConfig;
 import org.apache.struts.config.ModuleConfig;
-import org.fenixedu.bennu.portal.RenderersAnnotationProcessor;
 
-import pt.ist.fenixWebFramework.renderers.plugin.RenderersRequestProcessor;
 import pt.ist.fenixWebFramework.struts.annotations.ExceptionHandling;
 import pt.ist.fenixWebFramework.struts.annotations.Exceptions;
 import pt.ist.fenixWebFramework.struts.annotations.Forward;
 import pt.ist.fenixWebFramework.struts.annotations.Forwards;
-import pt.ist.fenixWebFramework.struts.annotations.Input;
 import pt.ist.fenixWebFramework.struts.annotations.Mapping;
-import pt.ist.fenixWebFramework.struts.tiles.FenixDefinitionsFactory;
-import pt.ist.fenixWebFramework.struts.tiles.PartialTileDefinition;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
@@ -44,19 +35,11 @@ import com.google.common.base.Strings;
  * @author - Shezad Anavarali (shezad@ist.utl.pt)
  * 
  */
+@SuppressWarnings("deprecation")
 public class StrutsAnnotationsPlugIn implements PlugIn {
 
-    private static final String STRUTS_DEFAULT_RESOURCE_MESSAGE = "org.apache.struts.action.MESSAGE";
-
-    private static final String PAGE_FILE_EXTENSION = ".jsp";
-
-    private static final String INPUT_PAGE_AND_METHOD = ".do?page=0&method=";
-
-    private static final String INPUT_DEFAULT_PAGE_AND_METHOD = ".do?page=0&method=prepare";
-
-    private static final List<String> UPPER_BOUND_SUPERCLASSES = Arrays.asList("DispatchAction", "Action", "Object");
-
-    private static boolean initialized = false;
+    private static final List<Class<?>> UPPER_BOUND_SUPERCLASSES = Arrays
+            .asList(DispatchAction.class, Action.class, Object.class);
 
     private static final Set<Class<?>> actionClasses = new HashSet<Class<?>>();
 
@@ -67,28 +50,13 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
     @Override
     public void init(ActionServlet servlet, ModuleConfig config) throws ServletException {
 
-        if (!initialized) {
-            PartialTileDefinition.init();
-            initialized = true;
-        }
-
         final String modulePrefix = CharMatcher.is('/').trimLeadingFrom(config.getPrefix());
-
-        int fromXML = config.findActionConfigs().length;
-
-        actionsPerModule.put(modulePrefix, new AtomicInteger(fromXML));
-        orphansPerModule.put(modulePrefix, new AtomicInteger(fromXML));
-
-        boolean isTilesModule =
-                config.getControllerConfig().getProcessorClass().equals(RenderersRequestProcessor.class.getName());
 
         for (Class<?> actionClass : actionClasses) {
             Mapping mapping = actionClass.getAnnotation(Mapping.class);
             if (mapping == null || !modulePrefix.equals(mapping.module())) {
                 continue;
             }
-
-            actionsPerModule.get(modulePrefix).incrementAndGet();
 
             final ActionMapping actionMapping = new ActionMapping();
 
@@ -107,19 +75,18 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             }
 
             if (mapping.input().isEmpty()) {
-                actionMapping.setInput(findInputMethod(actionClass, mapping));
+                actionMapping.setInput(mapping.path() + ".do?&method=prepare");
             } else {
-                registerInput(actionMapping, mapping.input(), isTilesModule);
+                actionMapping.setInput(mapping.input());
             }
 
-            String defaultResourcesName = getDefaultResourcesName(config);
             Forwards forwards = actionClass.getAnnotation(Forwards.class);
             if (forwards != null) {
                 for (final Forward forward : forwards.value()) {
-                    registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName, isTilesModule);
+                    registerForward(actionMapping, forward);
                 }
             }
-            registerSuperclassForwards(actionMapping, actionClass.getSuperclass(), mapping, defaultResourcesName, isTilesModule);
+            registerSuperclassForwards(actionMapping, actionClass.getSuperclass());
 
             Exceptions exceptions = actionClass.getAnnotation(Exceptions.class);
             if (exceptions != null) {
@@ -127,30 +94,7 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             }
 
             config.addActionConfig(actionMapping);
-
-            if (RenderersAnnotationProcessor.getFunctionalityForType(actionClass) == null) {
-                orphansPerModule.get(modulePrefix).incrementAndGet();
-                if (!isTilesModule) {
-                    System.out.println("\tAction " + actionClass.getName() + " is orphan!");
-                }
-            }
         }
-    }
-
-    private static final Map<String, AtomicInteger> actionsPerModule = new HashMap<>();
-    private static final Map<String, AtomicInteger> orphansPerModule = new HashMap<>();
-
-    public static void dumpStats() {
-        int total = 0, orphans = 0, modules = 0;
-        for (Entry<String, AtomicInteger> entry : actionsPerModule.entrySet()) {
-            modules++;
-            int thisOrphans = orphansPerModule.get(entry.getKey()).get();
-            System.out.println("Module: " + entry.getKey() + " has " + entry.getValue() + " actions and " + thisOrphans
-                    + " orphans");
-            total += entry.getValue().get();
-            orphans += thisOrphans;
-        }
-        System.out.printf("Total actions: %d, total orphans: %d, total modules %d\n", total, orphans, modules);
     }
 
     private static void registerExceptionHandling(final ActionMapping actionMapping, Exceptions exceptions) {
@@ -176,9 +120,8 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
         }
     }
 
-    private static void registerSuperclassForwards(final ActionMapping actionMapping, Class<?> superclass, Mapping mapping,
-            String defaultResourcesName, boolean isTilesModule) {
-        if (UPPER_BOUND_SUPERCLASSES.contains(superclass.getSimpleName())) {
+    private static void registerSuperclassForwards(final ActionMapping actionMapping, Class<?> superclass) {
+        if (UPPER_BOUND_SUPERCLASSES.contains(superclass)) {
             return;
         }
         Forwards forwards = superclass.getAnnotation(Forwards.class);
@@ -188,41 +131,16 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
                     actionMapping.findForward(forward.name());
                 } catch (NullPointerException ex) {
                     // Forward wasn't registered in any subclass, so register it.
-                    registerForward(actionMapping, forward, forwards, mapping, defaultResourcesName, isTilesModule);
+                    registerForward(actionMapping, forward);
                 }
             }
         }
-        registerSuperclassForwards(actionMapping, superclass.getSuperclass(), mapping, defaultResourcesName, isTilesModule);
+        registerSuperclassForwards(actionMapping, superclass.getSuperclass());
     }
 
-    private static void registerInput(final ActionMapping actionMapping, String input, boolean isTilesModule) {
-        if (isTilesModule && isSimplePageFile(input)) {
-            PartialTileDefinition tileDefinition = new PartialTileDefinition(input);
-            FenixDefinitionsFactory.registerDefinition(tileDefinition);
-            actionMapping.setInput(tileDefinition.getName());
-        } else {
-            // The input is using an existing tile definition
-            actionMapping.setInput(input);
-        }
-    }
-
-    private static void registerForward(final ActionMapping actionMapping, final Forward forward, Forwards forwards,
-            Mapping mapping, String defaultResourcesName, boolean isTilesModule) {
-        if (isTilesModule && forward.useTile() && isSimplePageFile(forward.path())) {
-            PartialTileDefinition tileDefinition = new PartialTileDefinition(forward, forwards, mapping, defaultResourcesName);
-            FenixDefinitionsFactory.registerDefinition(tileDefinition);
-            actionMapping.addForwardConfig(new ActionForward(forward.name(), tileDefinition.getName(), forward.redirect(),
-                    forward.contextRelative()));
-        } else {
-            // The forward is using an existing tile definition
-            actionMapping.addForwardConfig(new ActionForward(forward.name(), forward.path(), forward.redirect(), forward
-                    .contextRelative()));
-        }
-    }
-
-    private static boolean isSimplePageFile(String str) {
-        return str.endsWith(PAGE_FILE_EXTENSION)
-                && !str.substring(0, str.length() - PAGE_FILE_EXTENSION.length()).contains(PAGE_FILE_EXTENSION);
+    private static void registerForward(ActionMapping actionMapping, Forward forward) {
+        actionMapping.addForwardConfig(new ActionForward(forward.name(), forward.path(), forward.redirect(), forward
+                .contextRelative()));
     }
 
     private void createFormBeanConfigIfNecessary(ModuleConfig config, Mapping mapping, final String formName) {
@@ -233,21 +151,6 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
             formBeanConfig.setName(formName);
             config.addFormBeanConfig(formBeanConfig);
         }
-    }
-
-    private static String getDefaultResourcesName(ModuleConfig config) {
-        MessageResourcesConfig resourcesConfig = config.findMessageResourcesConfig(STRUTS_DEFAULT_RESOURCE_MESSAGE);
-        return (resourcesConfig == null) ? null : resourcesConfig.getParameter();
-    }
-
-    private String findInputMethod(Class<?> actionClass, Mapping mapping) {
-        for (Method method : actionClass.getMethods()) {
-            final Input input = method.getAnnotation(Input.class);
-            if (input != null) {
-                return mapping.path() + INPUT_PAGE_AND_METHOD + method.getName();
-            }
-        }
-        return mapping.path() + INPUT_DEFAULT_PAGE_AND_METHOD;
     }
 
     public static void registerMapping(Class<?> type) {

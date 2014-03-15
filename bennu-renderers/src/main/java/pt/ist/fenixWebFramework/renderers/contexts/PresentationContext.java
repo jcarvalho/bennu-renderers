@@ -5,7 +5,7 @@ import java.util.Properties;
 import pt.ist.fenixWebFramework.renderers.components.state.IViewState;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
 import pt.ist.fenixWebFramework.renderers.schemas.Schema;
-import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
+import pt.ist.fenixWebFramework.renderers.utils.RenderKit.RenderMode;
 
 public abstract class PresentationContext {
 

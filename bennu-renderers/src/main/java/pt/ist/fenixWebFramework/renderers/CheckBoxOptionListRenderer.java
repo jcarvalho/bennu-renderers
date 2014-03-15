@@ -17,7 +17,7 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObjectKey;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
 import pt.ist.fenixWebFramework.renderers.schemas.Schema;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
-import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
+import pt.ist.fenixWebFramework.renderers.utils.RenderKit.RenderMode;
 
 import com.google.common.base.Predicate;
 
@@ -245,7 +245,7 @@ public class CheckBoxOptionListRenderer extends SelectionRenderer {
 
                 PresentationContext newContext = getContext().createSubContext(metaObject);
                 newContext.setLayout(layout);
-                newContext.setRenderMode(RenderMode.getMode("output"));
+                newContext.setRenderMode(RenderMode.OUTPUT);
 
                 RenderKit kit = RenderKit.getInstance();
                 HtmlComponent component = kit.render(newContext, obj);

@@ -24,7 +24,4 @@ public @interface Forward {
 
     boolean contextRelative() default true;
 
-    boolean useTile() default true;
-
-    Tile tileProperties() default @Tile();
 }

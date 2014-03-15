@@ -6,8 +6,7 @@ import pt.ist.fenixWebFramework.renderers.components.state.ViewStateWrapper;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
 import pt.ist.fenixWebFramework.renderers.model.MetaObjectKey;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
-import pt.ist.fenixWebFramework.renderers.model.UserIdentity;
-import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
+import pt.ist.fenixWebFramework.renderers.utils.RenderKit.RenderMode;
 
 public class InputContext extends PresentationContext {
 
@@ -16,7 +15,7 @@ public class InputContext extends PresentationContext {
     public InputContext() {
         super();
 
-        setRenderMode(RenderMode.getMode("input"));
+        setRenderMode(RenderMode.INPUT);
     }
 
     protected InputContext(InputContext parent) {
@@ -50,10 +49,6 @@ public class InputContext extends PresentationContext {
         } else {
             return viewState;
         }
-    }
-
-    protected UserIdentity getUser() {
-        return getViewState().getUser();
     }
 
     public HtmlForm getForm() {

@@ -16,7 +16,7 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObjectKey;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
 import pt.ist.fenixWebFramework.renderers.schemas.Schema;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
-import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
+import pt.ist.fenixWebFramework.renderers.utils.RenderKit.RenderMode;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 
 import com.google.common.base.Strings;
@@ -235,7 +235,7 @@ public class RadioButtonListRenderer extends SelectionRenderer {
         private void fillBodyForRadioLabel(MetaObject metaObject, Object obj, String layout, HtmlLabel label) {
             PresentationContext newContext = getContext().createSubContext(metaObject);
             newContext.setLayout(layout);
-            newContext.setRenderMode(RenderMode.getMode("output"));
+            newContext.setRenderMode(RenderMode.OUTPUT);
 
             RenderKit kit = RenderKit.getInstance();
             HtmlComponent component = kit.render(newContext, obj);

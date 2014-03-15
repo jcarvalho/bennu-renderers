@@ -14,7 +14,7 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObjectFactory;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
 import pt.ist.fenixWebFramework.renderers.schemas.Schema;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
-import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
+import pt.ist.fenixWebFramework.renderers.utils.RenderKit.RenderMode;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 
 import com.google.common.base.Strings;
@@ -224,7 +224,7 @@ public class MenuOptionListRenderer extends SelectionRenderer {
         private void fillBodyWithRenderKit(RenderKit kit, MetaObject metaObject, Object obj, HtmlMenuOption option) {
             PresentationContext newContext = getContext().createSubContext(metaObject);
             newContext.setLayout(getEachLayout());
-            newContext.setRenderMode(RenderMode.getMode("output"));
+            newContext.setRenderMode(RenderMode.OUTPUT);
 
             HtmlComponent component = kit.render(newContext, obj);
             option.setBody(component);

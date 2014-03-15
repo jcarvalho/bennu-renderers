@@ -53,7 +53,6 @@ import org.fenixedu.bennu.core.presentationTier.servlets.ActionServletConfigurat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pt.ist.fenixWebFramework.struts.plugin.StrutsAnnotationsPlugIn;
 import pt.ist.fenixframework.FenixFramework;
 import pt.ist.fenixframework.core.Project;
 
@@ -133,7 +132,6 @@ public class ActionServletWrapper extends ActionServlet {
         initializeParameterMapDefaults();
         initializeConfigurations();
         super.init(new ServletConfigWrapper(config));
-        StrutsAnnotationsPlugIn.dumpStats();
     }
 
     @Override
@@ -145,7 +143,6 @@ public class ActionServletWrapper extends ActionServlet {
 
     private void initializeParameterMapDefaults() {
         parameterMap.put("config", "/WEB-INF/conf/struts-default.xml");
-        //  parameterMap.put("application", "resources.ApplicationResources");
 
         parameterMap.put("debug", "3");
         parameterMap.put("detail", "3");

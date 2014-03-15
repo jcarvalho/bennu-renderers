@@ -1,7 +1,6 @@
 package pt.ist.fenixWebFramework.renderers.utils;
 
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -22,36 +21,16 @@ import pt.ist.fenixWebFramework.renderers.schemas.Schema;
  */
 public class RenderKit {
 
-    private static RenderKit instance = new RenderKit();
-
-    private Map<RenderMode, RendererRegistry> registryMap;
-
-    private SchemaRegistry schemaRegistry;
-
-    //
-    // construct
-    //
-
-    private RenderKit() {
-        registryMap = new Hashtable<RenderMode, RendererRegistry>();
-
-        Iterator<RenderMode> iterator = RenderMode.getAllModes().iterator();
-        while (iterator.hasNext()) {
-            RenderMode mode = iterator.next();
-
-            registryMap.put(mode, new RendererRegistry());
-        }
-
-        schemaRegistry = new SchemaRegistry();
+    public static enum RenderMode {
+        INPUT, OUTPUT;
     }
 
-    /**
-     * Used to allow reloading of the configuration in runtime All registered schemas
-     * and renderers are lost.
-     */
-    public static void reset() {
-        RenderKit.instance = new RenderKit();
-    }
+    private static final RenderKit instance = new RenderKit();
+
+    private final RendererRegistry inputRenderers = new RendererRegistry();
+    private final RendererRegistry outputRenderers = new RendererRegistry();
+
+    private static final Map<String, Schema> schemasTable = new HashMap<>();
 
     /**
      * Retrieves the default instance of the render kit.
@@ -73,14 +52,14 @@ public class RenderKit {
      */
     public void registerRenderer(RenderMode mode, Class type, String layout, Class<? extends Renderer> renderer,
             Properties defaultProperties) {
-        registryMap.get(mode).registerRenderer(type, layout, renderer, defaultProperties);
+        (mode == RenderMode.INPUT ? inputRenderers : outputRenderers).registerRenderer(type, layout, renderer, defaultProperties);
     }
 
     /**
      * Registers a new schema. The scheme can be searched by name with {@link #findSchema(String)}.
      */
     public void registerSchema(Schema schema) {
-        schemaRegistry.registerSchema(schema);
+        schemasTable.put(schema.getName(), schema);
     }
 
     //
@@ -95,21 +74,33 @@ public class RenderKit {
      * @exception NoSuchSchemaException if the schema named <tt>schemaName</tt> could not be found
      */
     public Schema findSchema(String schemaName) {
-        return schemaRegistry.getSchema(schemaName);
+        if (schemaName == null) {
+            return null;
+        }
+
+        if (!schemasTable.containsKey(schemaName)) {
+            throw new NoSuchSchemaException(schemaName);
+        }
+
+        return schemasTable.get(schemaName);
+    }
+
+    public static boolean hasSchema(String schemaName) {
+        return schemasTable.containsKey(schemaName);
     }
 
     /**
      * @exception NoRendererException if no renderer description could be found
      */
     public RendererDescription getExactRendererDescription(RenderMode mode, Class type, String layout) {
-        return registryMap.get(mode).getExactRenderDescription(type, layout);
+        return (mode == RenderMode.INPUT ? inputRenderers : outputRenderers).getExactRenderDescription(type, layout);
     }
 
     /**
      * @exception NoRendererException if no renderer description could be found
      */
     public RendererDescription getRendererDescription(RenderMode mode, Class type, String layout) {
-        return registryMap.get(mode).getRenderDescription(type, layout);
+        return (mode == RenderMode.INPUT ? inputRenderers : outputRenderers).getRenderDescription(type, layout);
     }
 
     /**
@@ -119,7 +110,7 @@ public class RenderKit {
         try {
             return getRendererDescription(mode, type, layout);
         } catch (NoRendererException e) {
-            return getRendererDescription(mode, type, null);
+            return getRendererDescription(mode, type, "");
         }
     }
 

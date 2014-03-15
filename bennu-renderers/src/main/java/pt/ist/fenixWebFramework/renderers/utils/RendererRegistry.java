@@ -10,7 +10,7 @@ import com.google.common.base.Predicate;
 
 public class RendererRegistry {
 
-    private ClassHierarchyTable<Map<String, RendererDescription>> renderersTable;
+    private final ClassHierarchyTable<Map<String, RendererDescription>> renderersTable;
 
     public RendererRegistry() {
         super();

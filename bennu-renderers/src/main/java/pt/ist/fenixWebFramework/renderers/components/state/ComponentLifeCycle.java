@@ -3,12 +3,15 @@ package pt.ist.fenixWebFramework.renderers.components.state;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.taglib.html.Constants;
+import org.fenixedu.bennu.core.domain.User;
+import org.fenixedu.bennu.core.security.Authenticate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +45,9 @@ public class ComponentLifeCycle {
 
     private class ComponentCollector {
 
-        private List<HtmlFormComponent> formComponents;
+        private final List<HtmlFormComponent> formComponents;
 
-        private List<HtmlController> controllers;
+        private final List<HtmlController> controllers;
 
         public ComponentCollector(IViewState viewState, HtmlComponent component) {
             this.formComponents = new ArrayList<HtmlFormComponent>();
@@ -146,8 +149,7 @@ public class ComponentLifeCycle {
 
     public ActionForward doLifeCycle(HttpServletRequest request) throws Exception {
 
-        EditRequest editRequest = new EditRequest(request);
-        List<IViewState> viewStates = editRequest.getAllViewStates();
+        List<IViewState> viewStates = getAllViewStates(request);
         List<ViewStateHolder> viewStateHolders = new ArrayList<ViewStateHolder>();
 
         boolean allValid = true;
@@ -161,7 +163,7 @@ public class ComponentLifeCycle {
             ViewStateHolder holder = new ViewStateHolder(viewState);
             viewStateHolders.add(holder);
 
-            if (cancelRequested(editRequest)) {
+            if (cancelRequested(request)) {
                 doCancel(viewState);
                 anyCanceled = true;
                 holder.setCanceled(true);
@@ -182,7 +184,7 @@ public class ComponentLifeCycle {
                 viewState.setUpdateComponentTree(false);
 
                 collector = new ComponentCollector(viewState, component);
-                updateComponent(collector, editRequest);
+                updateComponent(collector, request);
 
                 runControllers(collector, viewState);
                 component = viewState.getComponent();
@@ -206,7 +208,7 @@ public class ComponentLifeCycle {
                 if (viewState.isVisible() || isHiddenSlot(viewState)) {
                     if (viewState.isValid()) {
                         // updateMetaObject can get conversion errors
-                        viewState.setValid(updateMetaObject(holder.getCollector(), editRequest, viewState));
+                        viewState.setValid(updateMetaObject(holder.getCollector(), viewState));
                     }
                 }
 
@@ -222,10 +224,33 @@ public class ComponentLifeCycle {
             }
         } finally {
             destination = getDestination(viewStates);
-            prepareDestination(viewStates, editRequest);
+            prepareDestination(viewStates, request);
         }
 
         return buildForward(destination);
+    }
+
+    private List<IViewState> getAllViewStates(HttpServletRequest request) throws IOException, ClassNotFoundException {
+        List<IViewState> viewStates =
+                ViewState.decodeListFromBase64(request.getParameter(LifeCycleConstants.VIEWSTATE_PARAM_NAME));
+
+        User userIdentity = Authenticate.getUser();
+        for (IViewState viewState : viewStates) {
+            viewState.setRequest(request);
+            if (!Objects.equals(viewState.getUser(), userIdentity)) {
+                throw new ViewStateUserChangedException();
+            }
+        }
+
+        return viewStates;
+    }
+
+    public static class ViewStateUserChangedException extends RuntimeException {
+        private static final long serialVersionUID = 6599979003228425205L;
+
+        public ViewStateUserChangedException() {
+            super("viewstate.user.changed");
+        }
     }
 
     public static void doCancel(IViewState viewState) {
@@ -233,7 +258,7 @@ public class ComponentLifeCycle {
         viewState.cancel();
     }
 
-    private boolean cancelRequested(EditRequest editRequest) {
+    private boolean cancelRequested(HttpServletRequest editRequest) {
         return editRequest.getParameter(Constants.CANCEL_PROPERTY) != null
                 || editRequest.getParameter(Constants.CANCEL_PROPERTY_X) != null;
     }
@@ -415,7 +440,7 @@ public class ComponentLifeCycle {
         return component != null ? component : new HtmlText();
     }
 
-    private void updateComponent(ComponentCollector collector, EditRequest editRequest) {
+    private void updateComponent(ComponentCollector collector, HttpServletRequest editRequest) {
         List<HtmlFormComponent> formComponents = collector.getFormComponents();
 
         for (HtmlFormComponent formComponent : formComponents) {
@@ -466,8 +491,7 @@ public class ComponentLifeCycle {
     /**
      * @return true if no conversion error occurs
      */
-    private boolean updateMetaObject(ComponentCollector collector, EditRequest editRequest, IViewState viewState)
-            throws Exception {
+    private boolean updateMetaObject(ComponentCollector collector, IViewState viewState) throws Exception {
         boolean hasConvertError = false;
 
         List<HtmlFormComponent> formComponents = collector.getFormComponents();
@@ -537,7 +561,7 @@ public class ComponentLifeCycle {
     }
 
     private static class ViewStateHolder {
-        private IViewState viewState;
+        private final IViewState viewState;
         private HtmlComponent component;
         private ComponentCollector collector;
         private boolean canceled;
@@ -564,10 +588,6 @@ public class ComponentLifeCycle {
 
         public IViewState getViewState() {
             return viewState;
-        }
-
-        public void setViewState(IViewState viewState) {
-            this.viewState = viewState;
         }
 
         public void setComponent(HtmlComponent component) {
