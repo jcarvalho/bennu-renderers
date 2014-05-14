@@ -1,6 +1,7 @@
 package pt.ist.fenixWebFramework.renderers.plugin;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +18,11 @@ import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 import pt.ist.fenixWebFramework.renderers.components.state.ComponentLifeCycle;
 import pt.ist.fenixWebFramework.renderers.components.state.EditRequest.ViewStateUserChangedException;
 import pt.ist.fenixWebFramework.renderers.components.state.IViewState;
+import pt.ist.fenixWebFramework.renderers.components.state.LifeCycleConstants;
 import pt.ist.fenixWebFramework.renderers.components.state.ViewDestination;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
+import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
+import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter.FenixHttpServletRequestWrapper;
 
 /**
  * The standard renderers request processor. This processor is responsible for
@@ -43,13 +47,15 @@ import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
  */
 public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
+    private static final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
+
     @Override
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        RenderersRequestProcessorImpl.currentRequest.set(request);
+        currentRequest.set(request);
         try {
             super.process(request, response);
         } finally {
-            RenderersRequestProcessorImpl.currentRequest.set(null);
+            currentRequest.set(null);
         }
     }
 
@@ -67,9 +73,9 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
             return new ActionForward("unauthorized", "/bennu-renderers/unauthorized.jsp", false, "");
         }
 
-        if (RenderersRequestProcessorImpl.hasViewState(request)) {
+        if (hasViewState(request)) {
             try {
-                RenderersRequestProcessorImpl.setViewStateProcessed(request);
+                request.setAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME, true);
 
                 ActionForward forward = ComponentLifeCycle.execute(request);
                 if (forward != null) {
@@ -109,4 +115,29 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
 
     }
 
+    public static HttpServletRequest getCurrentRequest() {
+        return currentRequest.get();
+    }
+
+    /**
+     * @return the form file associated with the given field name or <code>null</code> if no file exists
+     */
+    @SuppressWarnings("unchecked")
+    public static UploadedFile getUploadedFile(String fieldName) {
+        Map<String, UploadedFile> map =
+                (Map<String, UploadedFile>) SimpleRenderersRequestProcessor.getCurrentRequest().getAttribute(
+                        FenixHttpServletRequestWrapper.ITEM_MAP_ATTRIBUTE);
+        return map == null ? null : map.get(fieldName);
+    }
+
+    public static String getCurrentEncoding() {
+        HttpServletRequest currentRequest = SimpleRenderersRequestProcessor.getCurrentRequest();
+        return currentRequest != null ? currentRequest.getCharacterEncoding() : null;
+    }
+
+    protected static boolean hasViewState(HttpServletRequest request) {
+        return request.getAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME) == null
+                && (request.getParameterValues(LifeCycleConstants.VIEWSTATE_PARAM_NAME) != null || request
+                        .getParameterValues(LifeCycleConstants.VIEWSTATE_LIST_PARAM_NAME) != null);
+    }
 }

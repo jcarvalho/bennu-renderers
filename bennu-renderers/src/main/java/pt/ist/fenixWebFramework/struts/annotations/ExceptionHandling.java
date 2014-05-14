@@ -1,12 +1,15 @@
 package pt.ist.fenixWebFramework.struts.annotations;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.apache.struts.action.ExceptionHandler;
 
-@Target({})
+@Target({ ElementType.TYPE })
+@Repeatable(Exceptions.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExceptionHandling {
 

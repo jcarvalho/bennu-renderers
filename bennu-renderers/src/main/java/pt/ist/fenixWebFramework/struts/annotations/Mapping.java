@@ -22,8 +22,6 @@ public @interface Mapping {
 
     String formBean() default "";
 
-    String attribute() default "";
-
     Class<? extends ActionForm> formBeanClass() default ActionForm.class;
 
     String input() default "";

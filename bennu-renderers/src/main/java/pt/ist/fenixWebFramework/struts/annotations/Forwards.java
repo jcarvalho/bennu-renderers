@@ -18,5 +18,4 @@ public @interface Forwards {
 
     Forward[] value();
 
-    Tile tileProperties() default @Tile();
 }

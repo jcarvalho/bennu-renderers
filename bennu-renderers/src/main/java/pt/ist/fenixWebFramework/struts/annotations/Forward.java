@@ -4,6 +4,7 @@
 package pt.ist.fenixWebFramework.struts.annotations;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -12,6 +13,7 @@ import java.lang.annotation.Target;
  * @author - Shezad Anavarali (shezad@ist.utl.pt)
  * 
  */
+@Repeatable(Forwards.class)
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Forward {
@@ -24,7 +26,4 @@ public @interface Forward {
 
     boolean contextRelative() default true;
 
-    boolean useTile() default true;
-
-    Tile tileProperties() default @Tile();
 }

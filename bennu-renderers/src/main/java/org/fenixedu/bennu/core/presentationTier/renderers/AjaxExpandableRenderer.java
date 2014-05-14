@@ -38,7 +38,7 @@ import pt.ist.fenixWebFramework.renderers.components.HtmlText;
 import pt.ist.fenixWebFramework.renderers.contexts.OutputContext;
 import pt.ist.fenixWebFramework.renderers.layouts.Layout;
 import pt.ist.fenixWebFramework.renderers.model.MetaObjectFactory;
-import pt.ist.fenixWebFramework.renderers.plugin.RenderersRequestProcessorImpl;
+import pt.ist.fenixWebFramework.renderers.plugin.SimpleRenderersRequestProcessor;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.GenericChecksumRewriter;
@@ -177,7 +177,7 @@ public class AjaxExpandableRenderer extends OutputRenderer {
 
             private String getSmallLink(DomainObject domainObject) {
                 String url =
-                        RenderersRequestProcessorImpl.getCurrentRequest().getContextPath()
+                        SimpleRenderersRequestProcessor.getCurrentRequest().getContextPath()
                                 + "/render.do?method=renderOutput&oid=" + domainObject.getExternalId() + "&schema="
                                 + getSmallSchema() + "&layout=" + getSmallLayout() + "&properties="
                                 + convertProperties(getSmallPropertiesMap());
@@ -190,7 +190,7 @@ public class AjaxExpandableRenderer extends OutputRenderer {
 
             private String getExpandLink(DomainObject domainObject) {
                 String url =
-                        RenderersRequestProcessorImpl.getCurrentRequest().getContextPath()
+                        SimpleRenderersRequestProcessor.getCurrentRequest().getContextPath()
                                 + "/render.do?method=renderOutput&oid=" + domainObject.getExternalId() + "&schema="
                                 + getExpandedSchema() + "&layout=" + getExpandedLayout() + "&properties="
                                 + convertProperties(getExpandedPropertiesMap());
