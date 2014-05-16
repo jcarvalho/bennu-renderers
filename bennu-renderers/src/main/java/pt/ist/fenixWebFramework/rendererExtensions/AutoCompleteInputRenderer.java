@@ -29,12 +29,12 @@ import com.google.common.base.Strings;
 /**
  * This renderer allows you to search for a domain object by providing a list of
  * possible completions, for the text typed, using a javascript technique.
- * 
+ *
  * <p>
  * This renderer can be used to do the input of any domain object because you can configure the concrete service that searches the
  * objects and all objects are referred to by their internal id. It's recommended that a specialized service is created for most
  * cases so that it's as efficient as possible.
- * 
+ *
  * <p>
  * Example: <br/>
  * <input type="text" value="po" style="width: 20em;"/> <div style="margin-top: -10px; border: 1px solid #eee; width: 20em;">
@@ -45,7 +45,7 @@ import com.google.common.base.Strings;
  * <li>Singapore</li>
  * </ul>
  * </div>
- * 
+ *
  * @author cfgi
  */
 public class AutoCompleteInputRenderer extends InputRenderer {
@@ -86,7 +86,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
     /**
      * Enforces a given width to the auto complete list. If it's not setted then
      * the width will be the same as the input text field.
-     * 
+     *
      * @param autoCompleteWidth
      */
     public void setAutoCompleteWidth(String autoCompleteWidth) {
@@ -116,17 +116,17 @@ public class AutoCompleteInputRenderer extends InputRenderer {
     /**
      * This property allows you to specify a slot that will hold the text that
      * was present in the input field when it was submited.
-     * 
+     *
      * <p>
      * If the renderer is used to edit the slot <code>slotA</code> of an object A and this property is set the value
      * <code>slotB</code> then when the field is submited the renderer will set the value of the text field in the
      * <code>slotB</code> of the object A.
-     * 
+     *
      * <p>
      * When you type in the text field an auto completion list is presented. Nevertheless an object is only selected when the user
      * selects one element from the sugested completions. This means that if the user does not select one element after typing
      * some text the value of the slot beeing edited will be set to <code>null</code>.
-     * 
+     *
      * @property
      */
     public void setRawSlotName(String rawSlotName) {
@@ -142,7 +142,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
      * used as the presentation of the object. If this proprty has the value <code>slotL</code> then the list of suggestions will
      * be a list of values
      * obtained by invoking <code>getSlotL</code> in each object.
-     * 
+     *
      * @property
      */
     public void setLabelField(String labelField) {
@@ -158,7 +158,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
      * field given by {@link #setLabelField(String) labelField} is used. See
      * {@link pt.ist.fenixWebFramework.renderers.utils.RenderUtils#getFormattedProperties(String, Object)} to see the accepted
      * format syntax.
-     * 
+     *
      * @property
      */
     public void setFormat(String format) {
@@ -172,7 +172,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
     /**
      * Limits the number of results that the servlet returns thus the number of
      * suggestions given to the user.
-     * 
+     *
      * @property
      */
     public void setMaxCount(Integer maxCount) {
@@ -185,7 +185,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
 
     /**
      * The html class of results shown.
-     * 
+     *
      * @property
      */
     public void setAutoCompleteItemsStyleClass(String autoCompleteItemsStyleClass) {
@@ -198,7 +198,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
 
     /**
      * The html class of the container of the results shown.
-     * 
+     *
      * @property
      */
     public void setAutoCompleteStyleClass(String autoCompleteStyleClass) {
@@ -211,7 +211,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
 
     /**
      * The html class of the text field.
-     * 
+     *
      * @property
      */
     public void setTextFieldStyleClass(String textFieldStyleClass) {
@@ -224,7 +224,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
 
     /**
      * The html class of the error message.
-     * 
+     *
      * @property
      */
     public void setErrorStyleClass(String errorStyleClass) {
@@ -237,7 +237,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
 
     /**
      * The size of the text field.
-     * 
+     *
      * @property
      */
     public void setSize(String size) {
@@ -251,7 +251,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
     /**
      * The number of characters the user is required to type before any
      * suggestion is offered.
-     * 
+     *
      * @property
      */
     public void setMinChars(int minChars) {
@@ -359,7 +359,7 @@ public class AutoCompleteInputRenderer extends InputRenderer {
         }
 
         protected void addSingleScript(HtmlContainer container, HtmlLink link, String scriptName) {
-            link.setUrl("/javaScript/" + scriptName);
+            link.setUrl("/bennu-renderers/js/" + scriptName);
             HtmlScript script = new HtmlScript("text/javascript", link.calculateUrl(), true);
             container.addChild(script);
         }

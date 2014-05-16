@@ -41,15 +41,15 @@ import com.google.common.base.Strings;
  * will have as many rows as there are objects in the collection beeing
  * presented. The table will have as many columns as the slots defined in the
  * given schema.
- * 
+ *
  * <p>
  * If no schema is given then a default schema is created for the first object in the collection and then used for the remaining
  * objects.
- * 
+ *
  * <p>
  * The header of each column will contain the slot's label. The table can also be extended with control links in each row. That
  * allows you to start an action configured with data from the object in the row.
- * 
+ *
  * Example:
  * <table border="1">
  * <thead>
@@ -81,11 +81,11 @@ import com.google.common.base.Strings;
  * <td><a href="#">Delete</a></td>
  * </tr>
  * </table>
- * 
+ *
  * <p>
  * Control links are an advanced feature of the collection renderer. A link can be added and configured through a set of
  * properties.
- * 
+ *
  * <ul>
  * <li>{@linkplain #setLink(String, String) link}</li>
  * <li>{@linkplain #setModule(String, String) module}</li>
@@ -95,12 +95,12 @@ import com.google.common.base.Strings;
  * <li>{@linkplain #setText(String, String) text}</li>
  * <li>{@linkplain #setOrder(String, String) order}</li>
  * </ul>
- * 
+ *
  * As you may want to specify a different value for each property and for each link you need, for example, to distinguish between
  * the <code>key</code> property of the Edit control link, and the <code>key</code> property of the Delete control link. That's
  * why each property as the format <em>&lt;property&gt;(String, String)</em>. It means that you can separate properties by name
  * and use <code>key(a)</code> and <code>bundle(a)</code> to refer to the key and bundle properties of the link you named "a".
- * 
+ *
  * @author cfgi
  */
 public class CollectionRenderer extends OutputRenderer {
@@ -183,7 +183,7 @@ public class CollectionRenderer extends OutputRenderer {
 
     /**
      * The table caption.
-     * 
+     *
      * @property
      */
     public void setCaption(String caption) {
@@ -196,7 +196,7 @@ public class CollectionRenderer extends OutputRenderer {
 
     /**
      * Sets the summary attribute of the generated table.
-     * 
+     *
      * @property
      */
     public void setSummary(String summary) {
@@ -217,7 +217,7 @@ public class CollectionRenderer extends OutputRenderer {
      * give empty classes to all the middle columns. So if you have 3 columns, a
      * value of "class1,,class2" would put "class1" in the first column and
      * "class2" in the third and last column.
-     * 
+     *
      * @property
      */
     public void setColumnClasses(String columnClasses) {
@@ -232,7 +232,7 @@ public class CollectionRenderer extends OutputRenderer {
      * The value of the class attribute of each cell in the table's header.
      * There is repetition as in {@linkplain #setColumnClasses(String)
      * columnClasses} or {@linkplain #setRowClasses(String) rowClasses}.
-     * 
+     *
      * @property
      */
     public void setHeaderClasses(String headerClasses) {
@@ -246,7 +246,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * With this property you can choose if you want to display headers or not
      * in the table
-     * 
+     *
      * @property
      */
     public boolean getDisplayHeaders() {
@@ -262,7 +262,7 @@ public class CollectionRenderer extends OutputRenderer {
      * can use a repeating
      * pattern for the classes. A value like "gray," could make each alternating
      * row be shaded.
-     * 
+     *
      * @property
      */
     public void setRowClasses(String rowClasses) {
@@ -279,7 +279,7 @@ public class CollectionRenderer extends OutputRenderer {
      * as {@linkplain #setRowClasses(String) rowClasses}. This means that, for
      * the example above, a suffix of <code>"years old"</code> would produce
      * rows like:
-     * 
+     *
      * <table border="1">
      * <tr>
      * <td>Name A</td>
@@ -289,7 +289,7 @@ public class CollectionRenderer extends OutputRenderer {
      * <td><a href="#">Delete</a></td>
      * </tr>
      * </table>
-     * 
+     *
      * @property
      */
     public void setSuffixes(String suffixes) {
@@ -304,7 +304,7 @@ public class CollectionRenderer extends OutputRenderer {
      * This property is similar to {@linkplain #setSuffixes(String) suffixes} with the difference that the text is inlcuded as
      * prefix of each cell
      * content.
-     * 
+     *
      * @property
      */
     public void setPrefixes(String prefixes) {
@@ -351,7 +351,7 @@ public class CollectionRenderer extends OutputRenderer {
      * The Counter property indicates the property that should be getted to
      * receive a number that will be displayed in the setted format right after
      * the label
-     * 
+     *
      * @property
      */
     public void setCounter(String name, String value) {
@@ -365,7 +365,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * The link property indicates the page to were the control link will point.
      * All params will be appended to this link.
-     * 
+     *
      * @property
      */
     public void setLink(String name, String value) {
@@ -379,7 +379,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * By default the link property will be mapped to the current module. You
      * can override that with this property.
-     * 
+     *
      * @property
      */
     public void setModule(String name, String value) {
@@ -394,43 +394,43 @@ public class CollectionRenderer extends OutputRenderer {
      * The <code>param</code> property allows you to indicate will values of the
      * object shown in a given row should be used to configure the link
      * specified.
-     * 
+     *
      * <p>
      * Imagine you want to add and link that sends you to a page were you can edit the object. The link forwards to an action and
      * that action needs to know which is the object you want ot edit. Supposing that each object as an <code>id</code> you may
      * have a configuration similar to:
-     * 
+     *
      * <pre>
      *   link(edit)  = &quot;/edit.do&quot;
      *   param(edit) = &quot;id&quot;
      * </pre>
-     * 
+     *
      * The result will be a link that will point to <code>&lt;module&gt;/edit.do?id=&lt;object id&gt:</code> were the id param
      * will be different for each object shown in the table.
-     * 
+     *
      * <p>
      * The <code>param</code> property supports two more features. It allows you to choose the name of the link parameter and
      * explicitly give new parameters. You can specify several parameters by separating the with a comma. The full syntax of the
      * <code>param</code> property is:
-     * 
+     *
      * <pre>
      *   &lt;slot&gt;[/&lt;name&gt;]?[=&lt;value&gt;]?
      * </pre>
-     * 
+     *
      * <dl>
      * <dt><code>slot</code></dt>
      * <dd>specifies the name of the object's slot from were the value will be retrieved. In the example above each object needed
      * to have a <code>getId()</code> method.</dd>
-     * 
+     *
      * <dt><code>name</code></dt>
      * <dd>specifies the name of the parameters that will appended to the link. If this parts is not given the slot name will be
      * used.</dd>
-     * 
+     *
      * <dt><code>value</code></dt>
      * <dd>allows you to override the value of the parameters. If you specify this part then <code>slot</code> does not need to be
      * a real slot of the object.</dd>
      * </dl>
-     * 
+     *
      * @property
      */
     public void setParam(String name, String value) {
@@ -444,7 +444,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * The resource key that will be used to find the link name, that is, the
      * name that will appear in the table.
-     * 
+     *
      * @property
      */
     public void setKey(String name, String value) {
@@ -458,7 +458,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * If the module's default bundle is not to be used you can indicate the
      * alternative bundle with this property.
-     * 
+     *
      * @property
      */
     public void setBundle(String name, String value) {
@@ -473,7 +473,7 @@ public class CollectionRenderer extends OutputRenderer {
      * An alternative to the {@link #setKey(String, String) key} property is
      * specifying the text to appear directly. Oviously this approach does not
      * work well with internationalized interfaces.
-     * 
+     *
      * @property
      */
     public void setText(String name, String value) {
@@ -493,22 +493,22 @@ public class CollectionRenderer extends OutputRenderer {
      * links should appear in the order: a, c, b.
      * <p>
      * Example 1:
-     * 
+     *
      * <pre>
      *   order(a) = &quot;1&quot;
      *   order(b) = &quot;3&quot;
      *   order(c) = &quot;2&quot;
      * </pre>
-     * 
+     *
      * <p>
      * Example 2:
-     * 
+     *
      * <pre>
      *   order(a) = &quot;first&quot;
      *   order(b) = &quot;second&quot;
      *   order(c) = &quot;third&quot;
      * </pre>
-     * 
+     *
      * @property
      */
     public void setOrder(String name, String value) {
@@ -522,7 +522,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * This property allows you to exclude a control link from appearing in the
      * first line of the generated table.
-     * 
+     *
      * @property
      */
     public void setExcludedFromFirst(String name, String value) {
@@ -538,7 +538,7 @@ public class CollectionRenderer extends OutputRenderer {
      * the link should be visible or not. By default all links are visible.
      * <p>
      * This can be used to have some links that depend on domain logic.
-     * 
+     *
      * @property
      */
     public void setVisibleIf(String name, String value) {
@@ -552,7 +552,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * This property does the same work as visibleIf but does the opposite
      * logic. If <code>true</code> then the link will not be shown.
-     * 
+     *
      * @property
      */
     public void setVisibleIfNot(String name, String value) {
@@ -565,7 +565,7 @@ public class CollectionRenderer extends OutputRenderer {
 
     /**
      * Specifies the icon for the link
-     * 
+     *
      * @param name
      * @return
      */
@@ -580,7 +580,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * This property allows you to exclude a control link from appearing in the
      * last line of the generated table.
-     * 
+     *
      * @property
      */
     public void setExcludedFromLast(String name, String value) {
@@ -595,7 +595,7 @@ public class CollectionRenderer extends OutputRenderer {
      * With this property you can set the criteria used to sort the collection
      * beeing presented. The accepted syntax for the criteria can be seen in
      * {@link RenderUtils#sortCollectionWithCriteria(Collection, String)}.
-     * 
+     *
      * @property
      */
     public void setSortBy(String sortBy) {
@@ -609,7 +609,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * Specifies if the control links ares grouped in a single cell of the
      * table. The linkGroupSeparator will be used to separate the control links.
-     * 
+     *
      * @property
      */
     public void setGroupLinks(boolean groupLinks) {
@@ -622,7 +622,7 @@ public class CollectionRenderer extends OutputRenderer {
 
     /**
      * Specifies the separator between links when these are grouped
-     * 
+     *
      * @property
      */
     public void setLinkGroupSeparator(String linkGroupSeparator) {
@@ -637,7 +637,7 @@ public class CollectionRenderer extends OutputRenderer {
      * Indicates that the control links should be generated in their own row.
      * This forces the links to be grouped and the {@link #setLinkGroupSeparator(String) link group separator} to be used so
      * you should define that.
-     * 
+     *
      * @property
      */
     public void setRowForLinks(boolean rowForLinks) {
@@ -654,7 +654,7 @@ public class CollectionRenderer extends OutputRenderer {
      * that a check box will be generated in each row allowing to select that
      * row. The user will be responsible for wrapping the whole table in a form
      * and submiting the form.
-     * 
+     *
      * @property
      */
     public void setCheckable(boolean checkable) {
@@ -667,7 +667,7 @@ public class CollectionRenderer extends OutputRenderer {
 
     /**
      * Selects the name of the checkbox when it's generated.
-     * 
+     *
      * @property
      */
     public void setCheckboxName(String checkboxName) {
@@ -682,7 +682,7 @@ public class CollectionRenderer extends OutputRenderer {
      * The check box value is in fact a property of the object beeing displayed
      * in the row. This is usefull, for example, to have as value an identificer
      * of the object.
-     * 
+     *
      * @property
      */
     public void setCheckboxValue(String checkboxValue) {
@@ -696,7 +696,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * Indicates that a link to select all checkboxes should be included in the
      * presentation. This property is only valid when the {@link #setCheckable(boolean) checkable} is <code>true</code>.
-     * 
+     *
      * @property
      */
     public void setSelectAllShown(boolean selectAllShown) {
@@ -710,13 +710,13 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * Chooses where the link should be placed. You can indicate the locations
      * as text and the options are <code>top</code>, <code>bottom</code>, or <code>both</code>.
-     * 
+     *
      * <p>
      * Example: <br/>
      * <code>selectAllLocation=both</code> <br/>
      * <code>selectAllLocation=top, bottom</code> <br/>
      * <code>selectAllLocation=bottom</code> (the default)<br/>
-     * 
+     *
      * @property
      */
     public void setSelectAllLocation(String selectAllLocation) {
@@ -735,21 +735,21 @@ public class CollectionRenderer extends OutputRenderer {
      * The linkFormat property indicates the format of the control link. The
      * params should be inserted in format. When this property is set, the link
      * and param properties are ignored
-     * 
+     *
      * <p>
      * Example 1:
-     * 
+     *
      * <pre>
      *              someAction.do?method=viewDetails&amp;idInternal=${idInternal}
      * </pre>
-     * 
+     *
      * <p>
      * Example 2:
-     * 
+     *
      * <pre>
      *            someAction/${someProperty}/${otherProperty}
      * </pre>
-     * 
+     *
      * @property
      */
     public void setLinkFormat(String name, String value) {
@@ -764,7 +764,7 @@ public class CollectionRenderer extends OutputRenderer {
      * If this property is specified all the others are ignored. This property
      * allows you to specify the exact content to show as a link. Then content
      * will be parsed with the same rules that apply to {@link #setLinkFormat(String, String) linkFormat}.
-     * 
+     *
      * @property
      */
     public void setCustomLink(String name, String value) {
@@ -779,7 +779,7 @@ public class CollectionRenderer extends OutputRenderer {
      * The contextRelative property indicates if the specified link is relative
      * to the current context or is an external link (e.g.
      * https://anotherserver.com/anotherScript)
-     * 
+     *
      * @property
      */
     public void setContextRelative(String name, String value) {
@@ -789,7 +789,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * The confirmationTitleKey property indicates the key of the confirmation
      * title to show
-     * 
+     *
      * @property
      */
     public void setConfirmationTitleKey(String name, String value) {
@@ -803,7 +803,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * The confirmationKey property indicates the key of the confirmation
      * message to show
-     * 
+     *
      * @property
      */
     public void setConfirmationKey(String name, String value) {
@@ -817,7 +817,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * The confirmationBundle property indicates the bundle for the confirmation
      * key message to show
-     * 
+     *
      * @property
      */
     public void setConfirmationBundle(String name, String value) {
@@ -835,7 +835,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * The confirmationArgs property indicates the arguments for a link
      * confirmation.
-     * 
+     *
      * @property
      */
     public void setConfirmationArgs(String name, String value) {
@@ -848,7 +848,7 @@ public class CollectionRenderer extends OutputRenderer {
 
     /**
      * The blankTarget property set blank target for a link.
-     * 
+     *
      * @property
      */
     public void setBlankTarget(String name, String value) {
@@ -862,7 +862,7 @@ public class CollectionRenderer extends OutputRenderer {
     /**
      * The target property indicates the arguments for a link target. Using
      * setBlankTarget will override this value.
-     * 
+     *
      * @property
      */
     public void setTarget(String name, String value) {
@@ -1131,7 +1131,7 @@ public class CollectionRenderer extends OutputRenderer {
         }
 
         private void addSingleScript(HtmlContainer container, HtmlLink link, String scriptName) {
-            link.setUrl("/javaScript/" + scriptName);
+            link.setUrl("/bennu-renderers/js/" + scriptName);
             HtmlScript script = new HtmlScript("text/javascript", link.calculateUrl(), true);
             container.addChild(script);
         }
@@ -1348,7 +1348,7 @@ public class CollectionRenderer extends OutputRenderer {
          * header and fecth the information from all the objects in the
          * collection we can have troubles when the collection contains objects
          * of different types.
-         * 
+         *
          * In this case we can't assume that all objects have the same slots
          * (because of an unspecified schema). So we have to search slots by
          * name and hope that it makes sense in the table.

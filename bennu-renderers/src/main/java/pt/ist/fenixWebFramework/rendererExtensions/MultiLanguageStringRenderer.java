@@ -1,9 +1,11 @@
 package pt.ist.fenixWebFramework.rendererExtensions;
 
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Locale.Builder;
 
 import org.fenixedu.commons.i18n.I18N;
+import org.fenixedu.commons.i18n.LocalizedString;
 
 import pt.ist.fenixWebFramework.renderers.StringRenderer;
 import pt.ist.fenixWebFramework.renderers.components.HtmlBlockContainer;
@@ -21,7 +23,7 @@ import pt.utl.ist.fenix.tools.util.i18n.MultiLanguageString;
  * can override the language in which the content is to be displayed with the {@link #setLanguage(String) language} property. In
  * this case the content to be presented
  * will be determined by {@link MultiLanguageString#getContent(Locale)}
- * 
+ *
  * @author cfgi
  * @author cgmp
  */
@@ -48,7 +50,7 @@ public class MultiLanguageStringRenderer extends StringRenderer {
     /**
      * Allows you to override the language in wich the <tt>MultiLanguageString</tt> content
      * will be presented.
-     * 
+     *
      * @property
      */
     public void setLanguage(String language) {
@@ -62,7 +64,7 @@ public class MultiLanguageStringRenderer extends StringRenderer {
     /**
      * Allows you to choose if a span or a div will be generated around the multi language string.
      * This can be usefull if the multi-language string contains much information or html code.
-     * 
+     *
      * @property
      */
     public void setInline(boolean inline) {
@@ -77,7 +79,7 @@ public class MultiLanguageStringRenderer extends StringRenderer {
      * Whenever a multi-language string is shown in a language that is not what the user requested
      * an annotation is added to shown in wich language the text is in. This property allows you
      * to override that behaviour.
-     * 
+     *
      * @property
      */
     public void setLanguageShown(boolean languageShown) {
@@ -91,7 +93,7 @@ public class MultiLanguageStringRenderer extends StringRenderer {
     /**
      * Choose the css class to apply to the annotation showing the value's
      * language when it isn't in the requested language.
-     * 
+     *
      * @property
      */
     public void setLanguageClasses(String languageClasses) {
@@ -105,7 +107,7 @@ public class MultiLanguageStringRenderer extends StringRenderer {
     /**
      * Force the diplay of the language of the text even when showing text in
      * the language requested by the user.
-     * 
+     *
      * @property
      */
     public void setShowLanguageForced(boolean forceShowLanguage) {
@@ -118,18 +120,19 @@ public class MultiLanguageStringRenderer extends StringRenderer {
             return super.renderComponent(layout, null, type);
         }
 
-        MultiLanguageString mlString = (MultiLanguageString) object;
-        String value = getRenderedText(mlString);
+        LocalizedString mlString = getLocalized(object);
+        Locale contentLocale = getContentLocale(mlString);
+        String value = getRenderedText(mlString, contentLocale);
 
         HtmlComponent component = super.renderComponent(layout, value, type);
 
-        if (mlString.getAllLocales().isEmpty()) {
+        if (mlString.getLocales().isEmpty()) {
             return component;
         }
 
-        component.setLanguage(getUsedLanguage(mlString).toLanguageTag());
+        component.setLanguage(contentLocale.toLanguageTag());
 
-        if (I18N.getLocale().equals(mlString.getContentLocale()) && !isShowLanguageForced()) {
+        if (I18N.getLocale().equals(contentLocale) && !isShowLanguageForced()) {
             return component;
         }
 
@@ -141,9 +144,7 @@ public class MultiLanguageStringRenderer extends StringRenderer {
         container.addChild(component);
         container.setIndented(false);
 
-        Locale locale = getUsedLanguage(mlString);
-
-        HtmlComponent languageComponent = locale == null ? new HtmlText() : new HtmlText(locale.getDisplayName());
+        HtmlComponent languageComponent = contentLocale == null ? new HtmlText() : new HtmlText(contentLocale.getDisplayName());
         languageComponent.setClasses(getLanguageClasses());
 
         container.addChild(new HtmlText(" (", false));
@@ -153,16 +154,36 @@ public class MultiLanguageStringRenderer extends StringRenderer {
         return container;
     }
 
-    private Locale getUsedLanguage(MultiLanguageString mlString) {
-        if (getLanguage() != null) {
-            return new Builder().setLanguageTag(getLanguage()).build();
+    protected LocalizedString getLocalized(Object object) {
+        if (object instanceof LocalizedString) {
+            return (LocalizedString) object;
+        } else if (object instanceof MultiLanguageString) {
+            return ((MultiLanguageString) object).toLocalizedString();
         } else {
-            return mlString.getContentLocale();
+            return null;
         }
     }
 
-    protected String getRenderedText(MultiLanguageString mlString) {
-        Locale locale = getUsedLanguage(mlString);
+    protected Locale getContentLocale(LocalizedString str) {
+        if (getLanguage() != null) {
+            return new Builder().setLanguageTag(getLanguage()).build();
+        }
+
+        Collection<Locale> locales = str.getLocales();
+        Locale locale = I18N.getLocale();
+        if (locales.contains(locale)) {
+            return locale;
+        }
+
+        Locale defaultLocale = Locale.getDefault();
+        if (locales.contains(defaultLocale)) {
+            return defaultLocale;
+        }
+
+        return locales.isEmpty() ? null : locales.iterator().next();
+    }
+
+    protected String getRenderedText(LocalizedString mlString, Locale locale) {
         return locale == null ? null : mlString.getContent(locale);
     }
 

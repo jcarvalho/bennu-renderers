@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.fenixedu.commons.i18n.I18N;
+import org.fenixedu.commons.i18n.LocalizedString;
 
 import pt.ist.fenixWebFramework.rendererExtensions.validators.MultiLanguageStringValidator;
 import pt.ist.fenixWebFramework.renderers.InputRenderer;
@@ -53,7 +54,7 @@ import com.google.common.base.Strings;
  * <option selected="selected" value="">-- Choose an option --</option> <option value="eo">Esperanto</option> <option
  * value="xx-klingon">Klingon</option> <option value="xx-piglatin">Pig Latin</option> <option value="xx-elmer">Elmer Fudd</option>
  * </select> <a href="#">Remove</a> </div> <a href="#">Add</a> </div>
- * 
+ *
  * @author cfgi
  */
 public class MultiLanguageStringInputRenderer extends InputRenderer {
@@ -70,7 +71,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
     /**
      * Allows you to configure the size of the input fields for each language.
-     * 
+     *
      * @property
      */
     public void setSize(Integer size) {
@@ -83,7 +84,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
     /**
      * The classes to apply to the div containing each language line.
-     * 
+     *
      * @property
      */
     public void setEachClasses(String eachClasses) {
@@ -96,7 +97,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
     /**
      * The classes to apply to the input field.
-     * 
+     *
      * @property
      */
     public void setInputClasses(String inputClasses) {
@@ -267,7 +268,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
         @Override
         public HtmlComponent createComponent(Object object, Class type) {
-            MultiLanguageString mls = (MultiLanguageString) object;
+            LocalizedString mls = getLocalized(object);
 
             MetaSlotKey key = ((MetaSlot) getInputContext().getMetaObject()).getKey();
             HtmlBlockContainer container = getTopContainer();
@@ -289,7 +290,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
                 map = getLanguageMap(true);
 
                 int index = 0;
-                for (Locale locale : mls.getAllLocales()) {
+                for (Locale locale : mls.getLocales()) {
                     map.put(index++, new LanguageBean(locale, mls.getContent(locale)));
                 }
             }
@@ -481,13 +482,23 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
     }
 
+    protected LocalizedString getLocalized(Object object) {
+        if (object instanceof LocalizedString) {
+            return (LocalizedString) object;
+        } else if (object instanceof MultiLanguageString) {
+            return ((MultiLanguageString) object).toLocalizedString();
+        } else {
+            return null;
+        }
+    }
+
     public static class MultiLanguageStringConverter extends Converter {
 
         @Override
         public Object convert(Class type, Object value) {
             String text = (String) value;
 
-            MultiLanguageString mls = new MultiLanguageString();
+            LocalizedString mls = new LocalizedString();
 
             Collection<LanguageBean> allLanguageBean = LanguageBean.importAllFromString(text);
             for (LanguageBean bean : allLanguageBean) {
@@ -496,7 +507,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
                 }
             }
 
-            return mls;
+            return type == MultiLanguageString.class ? MultiLanguageString.fromLocalizedString(mls) : mls;
         }
 
     }
