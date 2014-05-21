@@ -9,13 +9,16 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.InputSource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import pt.ist.fenixWebFramework.renderers.exceptions.NoRendererException;
 import pt.ist.fenixWebFramework.renderers.exceptions.NoSuchSchemaException;
@@ -36,20 +39,18 @@ public class ConfigurationReader {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
 
     public static void readSchemas(URL schemaConfig) throws ServletException {
-        Element root = readConfigRootElement(schemaConfig);
+        Document root = readConfigRootElement(schemaConfig);
 
         if (root != null) {
-            List<?> schemaElements = root.getChildren("schema");
 
-            for (Object element : schemaElements) {
-                Element schemaElement = (Element) element;
+            for (Element schemaElement : iterable(root.getElementsByTagName("schema"))) {
 
-                String schemaName = schemaElement.getAttributeValue("name");
-                String typeName = schemaElement.getAttributeValue("type");
-                String extendedSchemaName = schemaElement.getAttributeValue("extends");
-                String refinedSchemaName = schemaElement.getAttributeValue("refines");
-                String schemaBundle = schemaElement.getAttributeValue("bundle");
-                String constructor = schemaElement.getAttributeValue("constructor");
+                String schemaName = attr(schemaElement.getAttribute("name"));
+                String typeName = attr(schemaElement.getAttribute("type"));
+                String extendedSchemaName = attr(schemaElement.getAttribute("extends"));
+                String refinedSchemaName = attr(schemaElement.getAttribute("refines"));
+                String schemaBundle = attr(schemaElement.getAttribute("bundle"));
+                String constructor = attr(schemaElement.getAttribute("constructor"));
 
                 if (RenderKit.getInstance().hasSchema(schemaName)) {
                     logger.error("Schema '{}' was already defined. Ignoring re-declaration.", schemaName);
@@ -105,14 +106,13 @@ public class ConfigurationReader {
                     schema = new Schema(schemaName, type);
                 }
 
-                List<?> removeElements = schemaElement.getChildren("remove");
-                if (extendedSchemaName == null && refinedSchema == null && removeElements.size() > 0) {
+                NodeList removeElements = schemaElement.getElementsByTagName("remove");
+                if (extendedSchemaName == null && refinedSchema == null && removeElements.getLength() > 0) {
                     logger.warn("schema '{}' specifies slots to be removed but it does not extend or refine schema", schemaName);
                 } else {
-                    for (Object remove : removeElements) {
-                        Element removeElement = (Element) remove;
+                    for (Element removeElement : iterable(removeElements)) {
 
-                        String name = removeElement.getAttributeValue("name");
+                        String name = removeElement.getAttribute("name");
 
                         SchemaSlotDescription slotDescription = schema.getSlotDescription(name);
                         if (slotDescription == null) {
@@ -126,26 +126,24 @@ public class ConfigurationReader {
                     }
                 }
 
-                List<?> slotElements = schemaElement.getChildren("slot");
-                for (Object slot : slotElements) {
-                    Element slotElement = (Element) slot;
+                for (Element slotElement : iterable(schemaElement.getElementsByTagName("slot"))) {
 
-                    String slotName = slotElement.getAttributeValue("name");
-                    String layout = slotElement.getAttributeValue("layout");
-                    String key = slotElement.getAttributeValue("key");
-                    String arg0 = slotElement.getAttributeValue("arg0");
-                    String bundle = slotElement.getAttributeValue("bundle");
-                    String slotSchema = slotElement.getAttributeValue("schema");
-                    String validatorName = slotElement.getAttributeValue("validator");
-                    String requiredValue = slotElement.getAttributeValue("required");
-                    String defaultValue = slotElement.getAttributeValue("default");
-                    String converterName = slotElement.getAttributeValue("converter");
-                    String readOnlyValue = slotElement.getAttributeValue("read-only");
-                    String hiddenValue = slotElement.getAttributeValue("hidden");
-                    String helpLabelValue = slotElement.getAttributeValue("help");
+                    String slotName = attr(slotElement.getAttribute("name"));
+                    String layout = attr(slotElement.getAttribute("layout"));
+                    String key = attr(slotElement.getAttribute("key"));
+                    String arg0 = attr(slotElement.getAttribute("arg0"));
+                    String bundle = attr(slotElement.getAttribute("bundle"));
+                    String slotSchema = attr(slotElement.getAttribute("schema"));
+                    String validatorName = attr(slotElement.getAttribute("validator"));
+                    String requiredValue = attr(slotElement.getAttribute("required"));
+                    String defaultValue = attr(slotElement.getAttribute("default"));
+                    String converterName = attr(slotElement.getAttribute("converter"));
+                    String readOnlyValue = attr(slotElement.getAttribute("read-only"));
+                    String hiddenValue = attr(slotElement.getAttribute("hidden"));
+                    String helpLabelValue = attr(slotElement.getAttribute("help"));
 
-                    String description = slotElement.getAttributeValue("description");
-                    String descriptionFormat = slotElement.getAttributeValue("descriptionFormat");
+                    String description = attr(slotElement.getAttribute("description"));
+                    String descriptionFormat = attr(slotElement.getAttribute("descriptionFormat"));
 
                     Properties properties = getPropertiesFromElement(slotElement);
 
@@ -169,13 +167,11 @@ public class ConfigurationReader {
                         validators.add(new ValidatorProperties(validator, new Properties()));
                     }
 
-                    List<?> validatorElements = slotElement.getChildren("validator");
-                    for (Object valid : validatorElements) {
-                        Element validatorElement = (Element) valid;
+                    for (Element validatorElement : iterable(slotElement.getElementsByTagName("validator"))) {
                         Properties validatorProperties;
 
                         validatorProperties = getPropertiesFromElement(validatorElement);
-                        validatorName = validatorElement.getAttributeValue("class");
+                        validatorName = attr(validatorElement.getAttribute("class"));
 
                         Class<HtmlValidator> validator = null;
                         if (validatorName != null) {
@@ -247,16 +243,15 @@ public class ConfigurationReader {
 
                 schema.setConstructor(construtorSignature);
 
-                List setterElements = schemaElement.getChildren("setter");
+                NodeList setterElements = schemaElement.getElementsByTagName("setter");
 
-                if (!setterElements.isEmpty()) {
+                if (setterElements.getLength() > 0) {
                     schema.getSpecialSetters().clear();
                 }
 
-                for (Iterator setterIterator = setterElements.iterator(); setterIterator.hasNext();) {
-                    Element setterElement = (Element) setterIterator.next();
+                for (Element setterElement : iterable(setterElements)) {
 
-                    String signature = setterElement.getAttributeValue("signature");
+                    String signature = setterElement.getAttribute("signature");
 
                     Signature setterSignature = parseSignature(schema, signature);
                     if (setterSignature != null) {
@@ -351,15 +346,13 @@ public class ConfigurationReader {
     private static Properties getPropertiesFromElement(Element element) {
         Properties properties = new Properties();
 
-        List propertyElements = element.getChildren("property");
-        for (Iterator propertyIterator = propertyElements.iterator(); propertyIterator.hasNext();) {
-            Element propertyElement = (Element) propertyIterator.next();
+        for (Element propertyElement : iterable(element.getElementsByTagName("property"))) {
 
-            String name = propertyElement.getAttributeValue("name");
-            String value = propertyElement.getAttributeValue("value");
+            String name = attr(propertyElement.getAttribute("name"));
+            String value = attr(propertyElement.getAttribute("value"));
 
-            if (value == null && !propertyElement.getContent().isEmpty()) {
-                value = propertyElement.getText();
+            if (value == null && !propertyElement.getTextContent().isEmpty()) {
+                value = propertyElement.getTextContent();
             }
 
             if (value != null) {
@@ -371,17 +364,16 @@ public class ConfigurationReader {
     }
 
     public static void readRenderers(URL renderConfig) throws ServletException {
-        Element root = readConfigRootElement(renderConfig);
+        Document root = readConfigRootElement(renderConfig);
 
         if (root != null) {
-            List renderers = root.getChildren();
+            NodeList renderers = root.getElementsByTagName("renderer");
 
-            for (Iterator iter = renderers.iterator(); iter.hasNext();) {
-                Element rendererElement = (Element) iter.next();
+            for (Element rendererElement : iterable(renderers)) {
 
-                String type = rendererElement.getAttributeValue("type");
-                String layout = rendererElement.getAttributeValue("layout");
-                String className = rendererElement.getAttributeValue("class");
+                String type = attr(rendererElement.getAttribute("type"));
+                String layout = attr(rendererElement.getAttribute("layout"));
+                String className = attr(rendererElement.getAttribute("class"));
 
                 Properties rendererProperties = getPropertiesFromElement(rendererElement);
 
@@ -389,7 +381,7 @@ public class ConfigurationReader {
                     Class objectClass = getClassForType(type, true);
                     Class rendererClass = Class.forName(className);
 
-                    String modeName = rendererElement.getAttributeValue("mode");
+                    String modeName = attr(rendererElement.getAttribute("mode"));
                     if (modeName == null) {
                         modeName = "output";
                     }
@@ -409,6 +401,26 @@ public class ConfigurationReader {
                 }
             }
         }
+    }
+
+    private static String attr(String value) {
+        return value.isEmpty() ? null : value;
+    }
+
+    private static Iterable<Element> iterable(NodeList nodes) {
+        return () -> new Iterator<Element>() {
+            private int i = 0;
+
+            @Override
+            public boolean hasNext() {
+                return i < nodes.getLength();
+            }
+
+            @Override
+            public Element next() {
+                return (Element) nodes.item(i++);
+            }
+        };
     }
 
     private static boolean hasRenderer(String layout, Class objectClass, RenderMode mode) {
@@ -437,22 +449,12 @@ public class ConfigurationReader {
         return Class.forName(type);
     }
 
-    private static Element readConfigRootElement(URL config) throws ServletException {
+    private static Document readConfigRootElement(URL config) throws ServletException {
         try {
-            SAXBuilder build = new SAXBuilder();
-            build.setExpandEntities(true);
-//            final InputSource EMPTY_SOURCE = new InputSource(new ByteArrayInputStream(new byte[0]));
-            build.setEntityResolver((publicId, systemId) -> {
-                final String[] split = systemId.split("!");
-                if (split.length > 1) {
-                    final String fileName = split[1];
-                    return new InputSource(ConfigurationReader.class.getResourceAsStream(fileName));
-                } else {
-                    return null;
-                }
-            });
-            return build.build(config).getRootElement();
-        } catch (JDOMException | IOException e) {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            return dBuilder.parse(config.openStream());
+        } catch (SAXException | IOException | ParserConfigurationException e) {
             throw new ServletException(e);
         }
     }

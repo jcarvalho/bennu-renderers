@@ -50,16 +50,6 @@
             <version>2.3</version>
         </dependency>
         <dependency>
-            <groupId>org.jdom</groupId>
-            <artifactId>jdom</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>1.0.b2</version>
-        </dependency>
-        <dependency>
             <groupId>struts</groupId>
             <artifactId>struts</artifactId>
             <version>1.2.7</version>
@@ -67,6 +57,10 @@
                 <exclusion>
                     <groupId>antlr</groupId>
                     <artifactId>antlr</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
