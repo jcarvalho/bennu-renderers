@@ -3,6 +3,9 @@ package pt.ist.fenixWebFramework.renderers;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.Part;
+
 import org.apache.commons.beanutils.PropertyUtils;
 
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
@@ -18,7 +21,6 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObject;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
 import pt.ist.fenixWebFramework.renderers.plugin.SimpleRenderersRequestProcessor;
-import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
 
 /**
  * This renderer creates a file input field that allows the user to submit a
@@ -142,10 +144,10 @@ public class FileInputRenderer extends InputRenderer {
 
     private static class UpdateFilePropertiesController extends HtmlController {
 
-        private MetaObject object;
-        private String fileNameSlot;
-        private String fileSizeSlot;
-        private String fileContentTypeSlot;
+        private final MetaObject object;
+        private final String fileNameSlot;
+        private final String fileSizeSlot;
+        private final String fileContentTypeSlot;
 
         public UpdateFilePropertiesController(MetaObject object, String fileNameSlot, String fileSizeSlot,
                 String fileContentTypeSlot) {
@@ -160,22 +162,32 @@ public class FileInputRenderer extends InputRenderer {
             HtmlSimpleValueComponent component = (HtmlSimpleValueComponent) getControlledComponent();
             String name = component.getName();
 
-            UploadedFile file = SimpleRenderersRequestProcessor.getUploadedFile(name);
+            Part file = SimpleRenderersRequestProcessor.getUploadedFile(name);
             if (file != null) { // if has file
                 Object object = this.object.getObject();
 
                 try {
                     String currentEncoding = SimpleRenderersRequestProcessor.getCurrentEncoding();
-                    setPropertyIgnoringErrors(object, this.fileNameSlot, currentEncoding != null ? new String(file.getName()
-                            .getBytes(), currentEncoding) : new String(file.getName().getBytes()));
+                    setPropertyIgnoringErrors(object, this.fileNameSlot, currentEncoding != null ? new String(getFileName(file)
+                            .getBytes(), currentEncoding) : new String(getFileName(file).getBytes()));
                 } catch (UnsupportedEncodingException e) {
                     // best effort name setting
-                    setPropertyIgnoringErrors(object, this.fileNameSlot, file.getName());
+                    setPropertyIgnoringErrors(object, this.fileNameSlot, getFileName(file));
                     e.printStackTrace();
                 }
                 setPropertyIgnoringErrors(object, this.fileSizeSlot, file.getSize());
                 setPropertyIgnoringErrors(object, this.fileContentTypeSlot, file.getContentType());
             }
+        }
+
+        public static String getFileName(Part filePart) {
+            String header = filePart.getHeader("content-disposition");
+            for (String headerPart : header.split(";")) {
+                if (headerPart.trim().startsWith("filename")) {
+                    return headerPart.substring(headerPart.indexOf('=') + 1).trim().replace("\"", "");
+                }
+            }
+            return null;
         }
 
         private void setPropertyIgnoringErrors(Object object, String property, Object value) {
@@ -193,7 +205,7 @@ public class FileInputRenderer extends InputRenderer {
 
     private static class FileConverter extends Converter {
 
-        private HtmlInputFile component;
+        private final HtmlInputFile component;
 
         public FileConverter(HtmlInputFile file) {
             this.component = file;
@@ -202,16 +214,16 @@ public class FileInputRenderer extends InputRenderer {
         @Override
         public Object convert(Class type, Object value) {
             String name = this.component.getName();
-            UploadedFile file = SimpleRenderersRequestProcessor.getUploadedFile(name);
 
-            if (file == null) {
-                return null;
-            } else {
-                try {
+            try {
+                Part file = SimpleRenderersRequestProcessor.getCurrentRequest().getPart(name);
+                if (file == null) {
+                    return null;
+                } else {
                     return file.getInputStream();
-                } catch (IOException e) {
-                    throw new ConversionException("renderers.converter.file.obtain", e, true, (Object[]) null);
                 }
+            } catch (IOException | ServletException e) {
+                throw new ConversionException("renderers.converter.file.obtain", e, true, (Object[]) null);
             }
         }
 

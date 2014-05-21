@@ -1,9 +1,10 @@
 package pt.ist.fenixWebFramework.renderers.validators;
 
+import javax.servlet.http.Part;
+
 import pt.ist.fenixWebFramework.renderers.components.HtmlInputFile;
 import pt.ist.fenixWebFramework.renderers.plugin.SimpleRenderersRequestProcessor;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
-import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
 
 /**
  * This validator can be used to validate uploaded files. It allows you to
@@ -164,7 +165,7 @@ public class FileValidator extends HtmlValidator {
     public void performValidation() {
         HtmlInputFile fileField = (HtmlInputFile) getComponent();
 
-        UploadedFile file = SimpleRenderersRequestProcessor.getUploadedFile(fileField.getName());
+        Part file = SimpleRenderersRequestProcessor.getUploadedFile(fileField.getName());
         if (file == null && isRequired()) {
             setInvalid("renderers.validator.required");
             return;
@@ -185,7 +186,7 @@ public class FileValidator extends HtmlValidator {
         }
 
         if (getAcceptedExtensions() != null) {
-            String fileName = file.getName();
+            String fileName = getFileName(file);
             int index = fileName.lastIndexOf(".");
 
             if (index != -1) {
@@ -210,6 +211,16 @@ public class FileValidator extends HtmlValidator {
         }
 
         setValid(true);
+    }
+
+    public static String getFileName(Part filePart) {
+        String header = filePart.getHeader("content-disposition");
+        for (String headerPart : header.split(";")) {
+            if (headerPart.trim().startsWith("filename")) {
+                return headerPart.substring(headerPart.indexOf('=') + 1).trim().replace("\"", "");
+            }
+        }
+        return null;
     }
 
     private boolean matchesMimeType(String contentType) {

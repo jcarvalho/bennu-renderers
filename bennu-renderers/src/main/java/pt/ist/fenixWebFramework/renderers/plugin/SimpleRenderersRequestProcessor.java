@@ -1,11 +1,11 @@
 package pt.ist.fenixWebFramework.renderers.plugin;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -21,8 +21,6 @@ import pt.ist.fenixWebFramework.renderers.components.state.IViewState;
 import pt.ist.fenixWebFramework.renderers.components.state.LifeCycleConstants;
 import pt.ist.fenixWebFramework.renderers.components.state.ViewDestination;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
-import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
-import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter.FenixHttpServletRequestWrapper;
 
 /**
  * The standard renderers request processor. This processor is responsible for
@@ -119,17 +117,6 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
         return currentRequest.get();
     }
 
-    /**
-     * @return the form file associated with the given field name or <code>null</code> if no file exists
-     */
-    @SuppressWarnings("unchecked")
-    public static UploadedFile getUploadedFile(String fieldName) {
-        Map<String, UploadedFile> map =
-                (Map<String, UploadedFile>) SimpleRenderersRequestProcessor.getCurrentRequest().getAttribute(
-                        FenixHttpServletRequestWrapper.ITEM_MAP_ATTRIBUTE);
-        return map == null ? null : map.get(fieldName);
-    }
-
     public static String getCurrentEncoding() {
         HttpServletRequest currentRequest = SimpleRenderersRequestProcessor.getCurrentRequest();
         return currentRequest != null ? currentRequest.getCharacterEncoding() : null;
@@ -139,5 +126,13 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
         return request.getAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME) == null
                 && (request.getParameterValues(LifeCycleConstants.VIEWSTATE_PARAM_NAME) != null || request
                         .getParameterValues(LifeCycleConstants.VIEWSTATE_LIST_PARAM_NAME) != null);
+    }
+
+    public static Part getUploadedFile(String name) {
+        try {
+            return getCurrentRequest().getPart(name);
+        } catch (IOException | ServletException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
