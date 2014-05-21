@@ -1,5 +1,8 @@
 package pt.ist.fenixWebFramework.renderers.validators;
 
+import java.io.Serializable;
+import java.util.Properties;
+
 import pt.ist.fenixWebFramework.renderers.components.HtmlFormComponent;
 import pt.ist.fenixWebFramework.renderers.components.HtmlScript;
 import pt.ist.fenixWebFramework.renderers.components.Validatable;
@@ -133,5 +136,26 @@ public abstract class HtmlValidator extends AbstractHtmlValidator {
 
     protected String bindJavascriptEventsTo(HtmlFormComponent formComponent) {
         return null;
+    }
+
+    public static class ValidatorProperties implements Serializable {
+        private static final long serialVersionUID = -8745540626782454809L;
+
+        private final Class<HtmlValidator> type;
+        private final Properties properties;
+
+        public ValidatorProperties(Class<HtmlValidator> type, Properties properties) {
+            this.type = type;
+            this.properties = properties;
+        }
+
+        public Class<HtmlValidator> getType() {
+            return type;
+        }
+
+        public Properties getProperties() {
+            return properties;
+        }
+
     }
 }

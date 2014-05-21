@@ -29,11 +29,10 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObjectCollection;
 import pt.ist.fenixWebFramework.renderers.model.MetaObjectFactory;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
 import pt.ist.fenixWebFramework.renderers.schemas.Schema;
+import pt.ist.fenixWebFramework.renderers.utils.CollectionPager;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 import pt.ist.fenixWebFramework.renderers.utils.RendererPropertyUtils;
-import pt.utl.ist.fenix.tools.util.CollectionPager;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 
 /**
@@ -1029,12 +1028,7 @@ public class CollectionRenderer extends OutputRenderer {
         @Override
         public void applyStyle(HtmlComponent component) {
             if (pagedLayout) {
-                component.getChild(new Predicate<HtmlComponent>() {
-                    @Override
-                    public boolean apply(HtmlComponent component) {
-                        return component instanceof HtmlTable;
-                    }
-                }).setClasses(getClasses());
+                component.getChild(child -> child instanceof HtmlTable).setClasses(getClasses());
             } else {
                 component.setClasses(getClasses());
             }

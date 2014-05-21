@@ -33,8 +33,8 @@ import pt.ist.fenixWebFramework.renderers.schemas.Schema;
 import pt.ist.fenixWebFramework.renderers.schemas.SchemaSlotDescription;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
 import pt.ist.fenixWebFramework.renderers.validators.HtmlValidator;
+import pt.ist.fenixWebFramework.renderers.validators.HtmlValidator.ValidatorProperties;
 import pt.ist.fenixWebFramework.renderers.validators.RequiredValidator;
-import pt.utl.ist.fenix.tools.util.Pair;
 
 public class EditObjectTag extends BaseRenderObjectTag implements ValidatorContainerTag {
 
@@ -403,14 +403,14 @@ public class EditObjectTag extends BaseRenderObjectTag implements ValidatorConta
         }
     }
 
-    protected List<Pair<Class<HtmlValidator>, Properties>> getValidatorsClass() {
-        List<Pair<Class<HtmlValidator>, Properties>> res = new ArrayList<Pair<Class<HtmlValidator>, Properties>>();
+    protected List<ValidatorProperties> getValidatorsClass() {
+        List<ValidatorProperties> res = new ArrayList<>();
         Map<String, Properties> validatorsMap = getValidators();
 
         for (Entry<String, Properties> entry : getValidators().entrySet()) {
             try {
                 Class<HtmlValidator> validatorClass = (Class<HtmlValidator>) Class.forName(entry.getKey());
-                res.add(new Pair<Class<HtmlValidator>, Properties>(validatorClass, entry.getValue()));
+                res.add(new ValidatorProperties(validatorClass, entry.getValue()));
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException("specified validator does not exist: " + entry.getKey(), e);
             }

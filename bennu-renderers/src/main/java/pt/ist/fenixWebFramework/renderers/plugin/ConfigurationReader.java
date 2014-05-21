@@ -15,9 +15,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import pt.ist.fenixWebFramework.renderers.exceptions.NoRendererException;
 import pt.ist.fenixWebFramework.renderers.exceptions.NoSuchSchemaException;
@@ -29,10 +27,10 @@ import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
 import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
 import pt.ist.fenixWebFramework.renderers.utils.RendererPropertyUtils;
 import pt.ist.fenixWebFramework.renderers.validators.HtmlValidator;
+import pt.ist.fenixWebFramework.renderers.validators.HtmlValidator.ValidatorProperties;
 import pt.ist.fenixWebFramework.renderers.validators.RequiredValidator;
 import pt.ist.fenixframework.FenixFramework;
 import pt.ist.fenixframework.core.Project;
-import pt.utl.ist.fenix.tools.util.Pair;
 
 public class ConfigurationReader {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
@@ -152,12 +150,11 @@ public class ConfigurationReader {
                     Properties properties = getPropertiesFromElement(slotElement);
 
                     // Validators
-                    List<Pair<Class<HtmlValidator>, Properties>> validators =
-                            new ArrayList<Pair<Class<HtmlValidator>, Properties>>();
+                    List<ValidatorProperties> validators = new ArrayList<>();
                     if (validatorName != null) {
                         try {
                             Class<HtmlValidator> validator = getClassForType(validatorName, true);
-                            validators.add(new Pair<Class<HtmlValidator>, Properties>(validator, new Properties()));
+                            validators.add(new ValidatorProperties(validator, new Properties()));
                         } catch (ClassNotFoundException e) {
                             logger.error("in schema '" + schemaName + "': validator '" + validatorName
                                     + "' was not found. Ignoring slot declaration.", e);
@@ -169,7 +166,7 @@ public class ConfigurationReader {
                     boolean required = requiredValue == null ? false : Boolean.parseBoolean(requiredValue);
                     if (required) {
                         Class validator = RequiredValidator.class;
-                        validators.add(new Pair<Class<HtmlValidator>, Properties>(validator, new Properties()));
+                        validators.add(new ValidatorProperties(validator, new Properties()));
                     }
 
                     List<?> validatorElements = slotElement.getChildren("validator");
@@ -191,7 +188,7 @@ public class ConfigurationReader {
                             }
                         }
 
-                        validators.add(new Pair<Class<HtmlValidator>, Properties>(validator, validatorProperties));
+                        validators.add(new ValidatorProperties(validator, validatorProperties));
                     }
 
                     Class converter = null;
@@ -445,17 +442,13 @@ public class ConfigurationReader {
             SAXBuilder build = new SAXBuilder();
             build.setExpandEntities(true);
 //            final InputSource EMPTY_SOURCE = new InputSource(new ByteArrayInputStream(new byte[0]));
-            build.setEntityResolver(new EntityResolver() {
-
-                @Override
-                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                    final String[] split = systemId.split("!");
-                    if (split.length > 1) {
-                        final String fileName = split[1];
-                        return new InputSource(getClass().getResourceAsStream(fileName));
-                    } else {
-                        return null;
-                    }
+            build.setEntityResolver((publicId, systemId) -> {
+                final String[] split = systemId.split("!");
+                if (split.length > 1) {
+                    final String fileName = split[1];
+                    return new InputSource(ConfigurationReader.class.getResourceAsStream(fileName));
+                } else {
+                    return null;
                 }
             });
             return build.build(config).getRootElement();

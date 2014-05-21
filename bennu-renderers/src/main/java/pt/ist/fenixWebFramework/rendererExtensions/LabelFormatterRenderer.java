@@ -2,12 +2,11 @@ package pt.ist.fenixWebFramework.rendererExtensions;
 
 import java.util.Properties;
 
-import pt.ist.fenixWebFramework.rendererExtensions.util.RendererMessageResourceProvider;
+import pt.ist.fenixWebFramework.rendererExtensions.util.LabelFormatter;
 import pt.ist.fenixWebFramework.renderers.OutputRenderer;
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
 import pt.ist.fenixWebFramework.renderers.components.HtmlText;
 import pt.ist.fenixWebFramework.renderers.layouts.Layout;
-import pt.utl.ist.fenix.tools.resources.LabelFormatter;
 
 public class LabelFormatterRenderer extends OutputRenderer {
 
@@ -15,9 +14,7 @@ public class LabelFormatterRenderer extends OutputRenderer {
 
     public LabelFormatterRenderer() {
         super();
-
         this.bundleMappings = new Properties();
-
     }
 
     @Override
@@ -26,9 +23,7 @@ public class LabelFormatterRenderer extends OutputRenderer {
 
             @Override
             public HtmlComponent createComponent(Object object, Class type) {
-
-                return new HtmlText(((LabelFormatter) object).toString(new RendererMessageResourceProvider(
-                        LabelFormatterRenderer.this.bundleMappings)));
+                return new HtmlText(((LabelFormatter) object).toString(LabelFormatterRenderer.this.bundleMappings));
             }
 
         };

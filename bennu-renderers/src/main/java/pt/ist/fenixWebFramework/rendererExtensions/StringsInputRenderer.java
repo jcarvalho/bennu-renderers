@@ -2,10 +2,8 @@ package pt.ist.fenixWebFramework.rendererExtensions;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -26,7 +24,12 @@ import pt.ist.fenixWebFramework.renderers.layouts.Layout;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
-import pt.utl.ist.fenix.tools.util.Strings;
+
+import com.google.common.base.Strings;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 /**
  * This renderer provides a generic way of editing slots that contain a {@link Strings}. The interface generated allows the user
@@ -142,7 +145,7 @@ public class StringsInputRenderer extends InputRenderer {
 
         @Override
         public HtmlComponent createComponent(Object object, Class type) {
-            Strings strings = (Strings) object;
+            JsonArray strings = (JsonArray) object;
 
             MetaSlotKey key = ((MetaSlot) getInputContext().getMetaObject()).getKey();
             HtmlBlockContainer container = getTopContainer();
@@ -160,12 +163,12 @@ public class StringsInputRenderer extends InputRenderer {
             container.addChild(addLink);
 
             Map<Integer, String> map = getStringsMap(false);
-            if ((map == null || map.isEmpty()) && (strings != null && !strings.isEmpty())) {
+            if ((map == null || map.isEmpty()) && (strings != null && strings.size() > 0)) {
                 map = getStringsMap(true);
 
                 int index = 0;
-                for (String string : strings.getUnmodifiableList()) {
-                    map.put(index++, string);
+                for (JsonElement string : strings) {
+                    map.put(index++, string.getAsString());
                 }
             }
 
@@ -174,12 +177,7 @@ public class StringsInputRenderer extends InputRenderer {
 
             if (map != null) {
                 List<Map.Entry<Integer, String>> list = new ArrayList<Map.Entry<Integer, String>>(map.entrySet());
-                Collections.sort(list, new Comparator<Map.Entry<Integer, String>>() {
-                    @Override
-                    public int compare(Entry<Integer, String> entry1, Entry<Integer, String> entry2) {
-                        return entry1.getKey().compareTo(entry2.getKey());
-                    }
-                });
+                Collections.sort(list, (entry1, entry2) -> entry1.getKey().compareTo(entry2.getKey()));
 
                 for (Map.Entry<Integer, String> entry : list) {
                     HtmlActionLink link = addStringInput(container, entry.getKey(), entry.getValue(), list.size() > 1);
@@ -248,8 +246,11 @@ public class StringsInputRenderer extends InputRenderer {
                 Map<Integer, String> map = getStringsMap(false);
 
                 if (map != null && map.size() > 0) {
-                    Strings strings = new Strings(map.values());
-                    value = strings.exportAsString();
+                    JsonArray array = new JsonArray();
+                    for (String val : map.values()) {
+                        array.add(new JsonPrimitive(val));
+                    }
+                    value = array.toString();
                 }
 
                 HtmlSimpleValueComponent component = (HtmlSimpleValueComponent) getControlledComponent();
@@ -335,7 +336,7 @@ public class StringsInputRenderer extends InputRenderer {
     public static class StringsConverter extends Converter {
         @Override
         public Object convert(Class type, Object value) {
-            return Strings.importFromString((String) value);
+            return new JsonParser().parse((String) value).getAsJsonArray();
         }
     }
 }

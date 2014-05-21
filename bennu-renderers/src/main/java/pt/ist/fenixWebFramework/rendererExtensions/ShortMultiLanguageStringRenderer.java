@@ -73,7 +73,7 @@ public class ShortMultiLanguageStringRenderer extends MultiLanguageStringRendere
     protected HtmlComponent renderComponent(Layout layout, Object object, Class type) {
         HtmlComponent component = super.renderComponent(layout, object, type);
 
-        LocalizedString mlString = getLocalized(object);
+        LocalizedString mlString = (LocalizedString) object;
         Locale contentLocale = getContentLocale(mlString);
 
         String previous = super.getRenderedText(mlString, contentLocale);

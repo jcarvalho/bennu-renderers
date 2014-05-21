@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
@@ -22,9 +21,6 @@ import pt.ist.fenixWebFramework.renderers.layouts.Layout;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
-import pt.utl.ist.fenix.tools.util.Pair;
-
-import com.google.common.base.Predicate;
 
 /**
  * This renderer presents an html menu with one option for each possible enum
@@ -179,12 +175,7 @@ public class EnumInputRenderer extends InputRenderer {
                 @Override
                 public void applyStyle(HtmlComponent component) {
                     HtmlInlineContainer block = (HtmlInlineContainer) component;
-                    HtmlTextInput textInput = (HtmlTextInput) block.getChild(new Predicate<HtmlComponent>() {
-                        @Override
-                        public boolean apply(HtmlComponent elem) {
-                            return !(elem instanceof HtmlHiddenField);
-                        }
-                    });
+                    HtmlTextInput textInput = (HtmlTextInput) block.getChild(elem -> !(elem instanceof HtmlHiddenField));
 
                     super.applyStyle(textInput);
                     textInput.setReadOnly(true);
@@ -205,28 +196,23 @@ public class EnumInputRenderer extends InputRenderer {
                 final Object bean = getRenderedObject();
                 Collection<Object> constants = getIncludedEnumValues(type, bean);
                 Collection<Object> excludedValues = getExcludedEnumValues(type, bean);
-                List<Pair<Enum, String>> pairList = new ArrayList<Pair<Enum, String>>();
+                List<EnumValue> pairList = new ArrayList<EnumValue>();
 
                 for (Object object : constants) {
                     Enum oneEnum = (Enum) object;
-                    pairList.add(new Pair<Enum, String>(oneEnum, RenderUtils.getEnumString(oneEnum, getBundle())));
+                    pairList.add(new EnumValue(oneEnum, RenderUtils.getEnumString(oneEnum, getBundle())));
                 }
 
                 if (isSort()) {
-                    Collections.sort(pairList, new Comparator<Pair<Enum, String>>() {
-                        @Override
-                        public int compare(Pair<Enum, String> o1, Pair<Enum, String> o2) {
-                            return o1.getValue().compareTo(o2.getValue());
-                        }
-                    });
+                    Collections.sort(pairList, (o1, o2) -> o1.value.compareTo(o2.value));
                 }
 
                 HtmlSimpleValueComponent holderComponent = createInputContainerComponent(enumerate);
 
-                for (Pair<Enum, String> pair : pairList) {
+                for (EnumValue pair : pairList) {
 
-                    Enum oneEnum = pair.getKey();
-                    String description = pair.getValue();
+                    Enum oneEnum = pair.key;
+                    String description = pair.value;
 
                     if (excludedValues.contains(oneEnum)) {
                         continue;
@@ -262,6 +248,16 @@ public class EnumInputRenderer extends InputRenderer {
             }
 
         };
+    }
+
+    private static class EnumValue<T extends Enum<T>> {
+        private final Enum<T> key;
+        private final String value;
+
+        public EnumValue(Enum<T> key, String value) {
+            this.key = key;
+            this.value = value;
+        }
     }
 
     protected void addEnumElement(Enum enumerate, HtmlSimpleValueComponent holder, Enum oneEnum, String description) {

@@ -14,7 +14,6 @@ import pt.ist.fenixWebFramework.renderers.components.HtmlContainer;
 import pt.ist.fenixWebFramework.renderers.components.HtmlInlineContainer;
 import pt.ist.fenixWebFramework.renderers.components.HtmlText;
 import pt.ist.fenixWebFramework.renderers.layouts.Layout;
-import pt.utl.ist.fenix.tools.util.i18n.MultiLanguageString;
 
 /**
  * This renderer provides a standard way of presenting a {@link MultiLanguageString}. The <tt>MultiLanguageString</tt> is
@@ -120,7 +119,7 @@ public class MultiLanguageStringRenderer extends StringRenderer {
             return super.renderComponent(layout, null, type);
         }
 
-        LocalizedString mlString = getLocalized(object);
+        LocalizedString mlString = (LocalizedString) object;
         Locale contentLocale = getContentLocale(mlString);
         String value = getRenderedText(mlString, contentLocale);
 
@@ -152,16 +151,6 @@ public class MultiLanguageStringRenderer extends StringRenderer {
         container.addChild(new HtmlText(")", false));
 
         return container;
-    }
-
-    protected LocalizedString getLocalized(Object object) {
-        if (object instanceof LocalizedString) {
-            return (LocalizedString) object;
-        } else if (object instanceof MultiLanguageString) {
-            return ((MultiLanguageString) object).toLocalizedString();
-        } else {
-            return null;
-        }
     }
 
     protected Locale getContentLocale(LocalizedString str) {

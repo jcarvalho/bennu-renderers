@@ -4,13 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Locale.Builder;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.fenixedu.commons.i18n.I18N;
@@ -36,9 +34,7 @@ import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
 import pt.ist.fenixWebFramework.renderers.utils.RenderKit;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
-import pt.ist.fenixWebFramework.renderers.validators.HtmlValidator;
-import pt.utl.ist.fenix.tools.util.Pair;
-import pt.utl.ist.fenix.tools.util.i18n.MultiLanguageString;
+import pt.ist.fenixWebFramework.renderers.validators.HtmlValidator.ValidatorProperties;
 
 import com.google.common.base.Strings;
 
@@ -223,8 +219,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
             if (!metaSlot.hasValidator()) {
                 Class defaultValidator = MultiLanguageStringValidator.class;
-                metaSlot.setValidators(Collections.singletonList(new Pair<Class<HtmlValidator>, Properties>(defaultValidator,
-                        new Properties())));
+                metaSlot.setValidators(Collections.singletonList(new ValidatorProperties(defaultValidator, new Properties())));
             }
         }
 
@@ -268,7 +263,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
         @Override
         public HtmlComponent createComponent(Object object, Class type) {
-            LocalizedString mls = getLocalized(object);
+            LocalizedString mls = (LocalizedString) object;
 
             MetaSlotKey key = ((MetaSlot) getInputContext().getMetaObject()).getKey();
             HtmlBlockContainer container = getTopContainer();
@@ -300,14 +295,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
             if (map != null) {
                 List<Map.Entry<Integer, LanguageBean>> list = new ArrayList<Map.Entry<Integer, LanguageBean>>(map.entrySet());
-                Collections.sort(list, new Comparator<Map.Entry<Integer, LanguageBean>>() {
-
-                    @Override
-                    public int compare(Entry<Integer, LanguageBean> o1, Entry<Integer, LanguageBean> o2) {
-                        return o1.getKey().compareTo(o2.getKey());
-                    }
-
-                });
+                Collections.sort(list, (o1, o2) -> o1.getKey().compareTo(o2.getKey()));
 
                 for (Map.Entry<Integer, LanguageBean> entry : list) {
                     HtmlActionLink link =
@@ -482,20 +470,10 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
 
     }
 
-    protected LocalizedString getLocalized(Object object) {
-        if (object instanceof LocalizedString) {
-            return (LocalizedString) object;
-        } else if (object instanceof MultiLanguageString) {
-            return ((MultiLanguageString) object).toLocalizedString();
-        } else {
-            return null;
-        }
-    }
-
     public static class MultiLanguageStringConverter extends Converter {
 
         @Override
-        public Object convert(Class type, Object value) {
+        public LocalizedString convert(Class type, Object value) {
             String text = (String) value;
 
             LocalizedString mls = new LocalizedString();
@@ -507,7 +485,7 @@ public class MultiLanguageStringInputRenderer extends InputRenderer {
                 }
             }
 
-            return type == MultiLanguageString.class ? MultiLanguageString.fromLocalizedString(mls) : mls;
+            return mls;
         }
 
     }
