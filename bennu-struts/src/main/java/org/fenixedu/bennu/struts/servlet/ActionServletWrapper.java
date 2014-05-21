@@ -22,7 +22,7 @@
 *   along with Bennu. If not, see <http://www.gnu.org/licenses/>. 
 *  
 */
-package org.fenixedu.bennu.core.presentationTier.servlets;
+package org.fenixedu.bennu.struts.servlet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +39,7 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 
 import org.apache.struts.Globals;
@@ -46,10 +47,10 @@ import org.apache.struts.action.ActionServlet;
 import org.apache.struts.config.ExceptionConfig;
 import org.apache.struts.config.MessageResourcesConfig;
 import org.apache.struts.config.ModuleConfig;
-import org.fenixedu.bennu.core.presentationTier.servlets.ActionServletConfiguration.ExceptionHandler;
-import org.fenixedu.bennu.core.presentationTier.servlets.ActionServletConfiguration.ExceptionHandlerMapping;
-import org.fenixedu.bennu.core.presentationTier.servlets.ActionServletConfiguration.ModuleConfiguration;
-import org.fenixedu.bennu.core.presentationTier.servlets.ActionServletConfiguration.ResourceConfig;
+import org.fenixedu.bennu.struts.servlet.ActionServletConfiguration.ExceptionHandler;
+import org.fenixedu.bennu.struts.servlet.ActionServletConfiguration.ExceptionHandlerMapping;
+import org.fenixedu.bennu.struts.servlet.ActionServletConfiguration.ModuleConfiguration;
+import org.fenixedu.bennu.struts.servlet.ActionServletConfiguration.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +67,7 @@ import com.google.gson.Gson;
  * @author Luis Cruz
  * 
  */
+@MultipartConfig
 @WebServlet(urlPatterns = ActionServletWrapper.URL_PATTERN, name = ActionServletWrapper.SERVLET_NAME, loadOnStartup = 1)
 public class ActionServletWrapper extends ActionServlet {
 
@@ -97,6 +99,7 @@ public class ActionServletWrapper extends ActionServlet {
         }
 
         @Override
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         public Enumeration getInitParameterNames() {
             return new Enumeration() {
 

@@ -4,8 +4,6 @@ import java.util.Collection;
 
 import javax.servlet.jsp.JspException;
 
-import org.apache.struts.taglib.TagUtils;
-
 import pt.ist.fenixWebFramework.rendererExtensions.converters.DomainObjectKeyArrayConverter;
 import pt.ist.fenixWebFramework.rendererExtensions.converters.DomainObjectKeyConverter;
 import pt.ist.fenixWebFramework.renderers.components.state.HiddenSlot;
@@ -113,7 +111,4 @@ public class FenixHiddenSlotTag extends HiddenSlotTag {
         return null;
     }
 
-    protected int getScopeByName(String scope) throws JspException {
-        return TagUtils.getInstance().getScope(scope);
-    }
 }

@@ -1,4 +1,4 @@
-package org.fenixedu.bennu.core.presentationTier.servlets;
+package org.fenixedu.bennu.struts.servlet;
 
 import java.util.Collection;
 

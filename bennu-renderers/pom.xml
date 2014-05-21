@@ -50,21 +50,6 @@
             <version>2.3</version>
         </dependency>
         <dependency>
-            <groupId>struts</groupId>
-            <artifactId>struts</artifactId>
-            <version>1.2.7</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>antlr</groupId>
-                    <artifactId>antlr</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>xml-apis</artifactId>
-                    <groupId>xml-apis</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.6.1</version>

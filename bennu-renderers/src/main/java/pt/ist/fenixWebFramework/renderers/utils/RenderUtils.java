@@ -13,18 +13,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.struts.Globals;
-import org.apache.struts.config.ModuleConfig;
-import org.apache.struts.util.MessageResources;
-import org.apache.struts.util.ModuleUtils;
-import org.apache.struts.util.RequestUtils;
+import org.fenixedu.bennu.core.i18n.BundleUtil;
+import org.fenixedu.commons.i18n.I18N;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,77 +178,26 @@ public class RenderUtils {
     }
 
     public static String getResourceString(String bundle, String key) {
-        return getResourceString(bundle, key, null);
+        return getResourceString(bundle, key);
     }
 
-    public static String getResourceString(String bundle, String key, Object[] args) {
-        MessageResources resources = getMessageResources(bundle);
+    public static String getResourceString(String bundle, String key, String... args) {
+        ResourceBundle resources = ResourceBundle.getBundle(bundle, I18N.getLocale());
 
-        Locale locale = getLocale();
-
-        if (resources.isPresent(locale, key)) {
-            return resources.getMessage(locale, key, args);
+        if (resources.containsKey(key)) {
+            String message = resources.getString(key);
+            for (int i = 0; i < args.length; i++) {
+                message = message.replaceAll("\\{" + i + "\\}", args[i] == null ? "" : Matcher.quoteReplacement(args[i]));
+            }
+            return message;
         }
 
-        // TODO: allow the name to be configured or fetch the resources in other
-        // way
-        MessageResources rendererResources = getMessageResources("RENDERER_RESOURCES");
-
-        if (rendererResources.isPresent(locale, key)) {
-            return rendererResources.getMessage(locale, key, args);
-        }
-
-        return null;
+        // Fallback if the default bundle doesn't contain the requested key
+        return BundleUtil.getString("resources.RendererResources", key, args);
     }
 
     private static Locale getLocale() {
-        HttpServletRequest currentRequest = RenderersRequestMapper.getCurrentRequest();
-
-        if (currentRequest == null) { // no in renderers context
-            return Locale.getDefault();
-        }
-
-        Locale locale = RequestUtils.getUserLocale(currentRequest, null);
-        if (locale != null) {
-            return locale;
-        }
-
-        return Locale.getDefault();
-    }
-
-    public static MessageResources getMessageResources() {
-        return getMessageResources(null);
-    }
-
-    public static MessageResources getMessageResources(String bundle) {
-        HttpServletRequest request = RenderersRequestMapper.getCurrentRequest();
-        ServletContext context = request.getServletContext();
-
-        MessageResources resources = null;
-
-        if (bundle == null) {
-            bundle = Globals.MESSAGES_KEY;
-        }
-
-        if (resources == null) {
-            resources = (MessageResources) request.getAttribute(bundle);
-        }
-
-        if (resources == null) {
-            ModuleConfig moduleConfig = ModuleUtils.getInstance().getModuleConfig(request, context);
-            resources = (MessageResources) context.getAttribute(bundle + moduleConfig.getPrefix());
-        }
-
-        if (resources == null) {
-            resources = (MessageResources) context.getAttribute(bundle);
-        }
-
-        if (resources == null) {
-            // TODO: make a more specific exception
-            throw new RuntimeException("could not find message resources: " + bundle);
-        }
-
-        return resources;
+        return I18N.getLocale();
     }
 
     public static String getFormatedResourceString(String key, Object... args) {

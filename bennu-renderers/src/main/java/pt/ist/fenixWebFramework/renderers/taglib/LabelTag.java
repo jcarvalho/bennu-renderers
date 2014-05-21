@@ -6,7 +6,7 @@ import java.util.List;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.apache.struts.util.MessageResources;
+import org.fenixedu.bennu.core.i18n.BundleUtil;
 
 import pt.ist.fenixWebFramework.renderers.components.Constants;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
@@ -83,8 +83,7 @@ public class LabelTag extends BodyTagSupport {
                 write(RenderUtils.getSlotLabel(object.getType(), getProperty(), getBundle(), getKey()));
             }
         } else if (getKey() != null) {
-            MessageResources resources = RenderUtils.getMessageResources(getBundle());
-            write(resources.getMessage(getKey()));
+            write(BundleUtil.getString(getBundle(), getKey()));
         } else {
             throw new JspException("must specify a property or a key");
         }

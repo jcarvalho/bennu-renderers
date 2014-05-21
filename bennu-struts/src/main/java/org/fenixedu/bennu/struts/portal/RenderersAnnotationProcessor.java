@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.apache.struts.actions.DispatchAction;
+import org.apache.struts.taglib.html.FormTag;
 import org.fenixedu.bennu.core.i18n.BundleUtil;
 import org.fenixedu.bennu.core.security.Authenticate;
 import org.fenixedu.bennu.portal.model.Application;
@@ -23,6 +24,7 @@ import org.fenixedu.bennu.struts.annotations.Mapping;
 import org.fenixedu.bennu.struts.plugin.StrutsAnnotationsPlugIn;
 import org.fenixedu.commons.i18n.LocalizedString;
 
+import pt.ist.fenixWebFramework.renderers.taglib.EditObjectTag;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RenderersSessionSecret.RenderersUserAuthenticationListener;
 
 @HandlesTypes({ Mapping.class, StrutsApplication.class, StrutsFunctionality.class })
@@ -36,6 +38,7 @@ public class RenderersAnnotationProcessor implements ServletContainerInitializer
     public void onStartup(Set<Class<?>> classes, ServletContext context) throws ServletException {
         PortalBackendRegistry.registerPortalBackend(new StrutsPortalBackend());
         Authenticate.addUserAuthenticationListener(new RenderersUserAuthenticationListener());
+        EditObjectTag.registerFormParentTag(FormTag.class);
 
         if (classes != null) {
             Map<Class<?>, Application> applicationClasses = new HashMap<Class<?>, Application>();

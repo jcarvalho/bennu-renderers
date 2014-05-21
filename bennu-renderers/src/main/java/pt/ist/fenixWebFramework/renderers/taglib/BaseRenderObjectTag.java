@@ -1,6 +1,7 @@
 package pt.ist.fenixWebFramework.renderers.taglib;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
@@ -9,13 +10,10 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.TagSupport;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.struts.Globals;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.config.ModuleConfig;
-import org.apache.struts.taglib.TagUtils;
 import org.fenixedu.bennu.core.security.Authenticate;
 
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
@@ -166,10 +164,6 @@ public abstract class BaseRenderObjectTag extends TagSupport {
         getRenderProperties().setProperty(name, value);
     }
 
-    protected int getScopeByName(String scope) throws JspException {
-        return TagUtils.getInstance().getScope(scope);
-    }
-
     protected Object getTargetObject() throws JspException {
         Object object = getTargetObjectByName();
 
@@ -191,7 +185,7 @@ public abstract class BaseRenderObjectTag extends TagSupport {
     protected Object getTargetObjectByName() throws JspException {
         if (getName() != null) {
             if (getScope() != null && getScope().length() > 0) {
-                return pageContext.getAttribute(getName(), getScopeByName(getScope()));
+                return pageContext.getAttribute(getName(), getScope(getScope()));
             } else {
                 return pageContext.findAttribute(getName());
             }
@@ -333,6 +327,29 @@ public abstract class BaseRenderObjectTag extends TagSupport {
 
         return currentPath;
 
+    }
+
+    public static Object lookup(PageContext pageContext, String name, String property, String scope) throws JspException {
+        try {
+            Object bean = scope == null ? pageContext.findAttribute(name) : pageContext.getAttribute(name, getScope(scope));
+            return property == null ? bean : PropertyUtils.getProperty(bean, property);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new JspException(e);
+        }
+    }
+
+    public static int getScope(String scopeName) {
+        switch (scopeName.toLowerCase()) {
+        case "page":
+            return 1;
+        case "request":
+            return 2;
+        case "session":
+            return 3;
+        case "application":
+            return 4;
+        }
+        return -1;
     }
 
 }

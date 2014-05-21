@@ -22,7 +22,7 @@
 *   along with Bennu. If not, see <http://www.gnu.org/licenses/>. 
 *  
 */
-package org.fenixedu.bennu.core.presentationTier.actions;
+package org.fenixedu.bennu.struts.actions;
 
 import java.io.IOException;
 import java.io.InputStream;

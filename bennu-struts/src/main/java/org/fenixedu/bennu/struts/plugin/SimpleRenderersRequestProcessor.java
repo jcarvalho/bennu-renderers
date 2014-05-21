@@ -79,9 +79,9 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
             try {
                 request.setAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME, true);
 
-                ActionForward forward = ComponentLifeCycle.execute(request);
+                ViewDestination forward = ComponentLifeCycle.execute(request);
                 if (forward != null) {
-                    return forward;
+                    return getActionForward(forward);
                 }
 
                 return super.processActionPerform(request, response, action, form, mapping);
@@ -97,7 +97,7 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
                     IViewState viewState = RenderUtils.getViewState();
                     if (viewState != null) {
                         ViewDestination destination = viewState.getInputDestination();
-                        input = destination.getActionForward();
+                        input = getActionForward(destination);
                     }
 
                     ActionForward forward = handler.processException(request, mapping, input, e);
@@ -121,6 +121,16 @@ public class SimpleRenderersRequestProcessor extends RequestProcessor {
         return request.getAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME) == null
                 && (request.getParameterValues(LifeCycleConstants.VIEWSTATE_PARAM_NAME) != null || request
                         .getParameterValues(LifeCycleConstants.VIEWSTATE_LIST_PARAM_NAME) != null);
+    }
+
+    public ActionForward getActionForward(ViewDestination destination) {
+        ActionForward forward = new ActionForward();
+
+        forward.setPath(destination.getPath());
+        forward.setModule(destination.getModule());
+        forward.setRedirect(destination.getRedirect());
+
+        return forward;
     }
 
 }

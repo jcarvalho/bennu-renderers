@@ -2,8 +2,6 @@ package pt.ist.fenixWebFramework.renderers.components.state;
 
 import java.io.Serializable;
 
-import org.apache.struts.action.ActionForward;
-
 public class ViewDestination implements Serializable {
 
     private String path;
@@ -40,16 +38,6 @@ public class ViewDestination implements Serializable {
 
     public void setRedirect(boolean redirect) {
         this.redirect = redirect;
-    }
-
-    public ActionForward getActionForward() {
-        ActionForward forward = new ActionForward();
-
-        forward.setPath(getPath());
-        forward.setModule(getModule());
-        forward.setRedirect(getRedirect());
-
-        return forward;
     }
 
     @Override

@@ -3,16 +3,17 @@ package pt.ist.fenixWebFramework.renderers.taglib;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
-
-import org.apache.struts.taglib.TagUtils;
 
 import pt.ist.fenixWebFramework.renderers.components.HtmlBlockContainer;
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
@@ -263,15 +264,22 @@ public class EditObjectTag extends BaseRenderObjectTag implements ValidatorConta
         componentToDraw.draw(pageContext);
     }
 
+    private static final Set<Class<?>> formParents = new HashSet<>();
+
+    public static void registerFormParentTag(Class<?> tagType) {
+        formParents.add(Objects.requireNonNull(tagType));
+    }
+
+    static {
+        registerFormParentTag(FormTag.class);
+    }
+
     private boolean hasFormParent() {
-        if (findAncestorWithClass(this, org.apache.struts.taglib.html.FormTag.class) != null) {
-            return true;
+        for (Class<?> type : formParents) {
+            if (findAncestorWithClass(this, type) != null) {
+                return true;
+            }
         }
-
-        if (findAncestorWithClass(this, pt.ist.fenixWebFramework.renderers.taglib.FormTag.class) != null) {
-            return true;
-        }
-
         return false;
     }
 

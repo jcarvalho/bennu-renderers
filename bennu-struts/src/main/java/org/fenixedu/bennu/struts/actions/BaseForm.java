@@ -22,7 +22,7 @@
 *   along with Bennu. If not, see <http://www.gnu.org/licenses/>. 
 *  
 */
-package org.fenixedu.bennu.core.presentationTier.forms;
+package org.fenixedu.bennu.struts.actions;
 
 import org.apache.struts.action.ActionForm;
 

@@ -3,8 +3,6 @@ package pt.ist.fenixWebFramework.renderers.taglib;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.apache.struts.taglib.TagUtils;
-
 // fr:default slot="" name="" property="" scope="" value="" converter=""/>
 public class DefaultValueTag extends TagSupport {
 
@@ -141,7 +139,7 @@ public class DefaultValueTag extends TagSupport {
             return getValue();
         }
 
-        return TagUtils.getInstance().lookup(this.pageContext, getName(), getProperty(), getScope());
+        return BaseRenderObjectTag.lookup(this.pageContext, getName(), getProperty(), getScope());
     }
 
     protected Class getConverterClass() throws JspException {
