@@ -1,4 +1,4 @@
-package org.fenixedu.bennu.portal;
+package org.fenixedu.bennu.struts.portal;
 
 import javax.servlet.http.HttpServletRequest;
 

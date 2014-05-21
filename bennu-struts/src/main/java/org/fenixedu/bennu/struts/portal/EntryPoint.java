@@ -1,4 +1,4 @@
-package org.fenixedu.bennu.portal;
+package org.fenixedu.bennu.struts.portal;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

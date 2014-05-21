@@ -1,7 +1,7 @@
 /**
  * 
  */
-package pt.ist.fenixWebFramework.struts.plugin;
+package org.fenixedu.bennu.struts.plugin;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,10 +21,9 @@ import org.apache.struts.actions.DispatchAction;
 import org.apache.struts.config.ExceptionConfig;
 import org.apache.struts.config.FormBeanConfig;
 import org.apache.struts.config.ModuleConfig;
-
-import pt.ist.fenixWebFramework.struts.annotations.ExceptionHandling;
-import pt.ist.fenixWebFramework.struts.annotations.Forward;
-import pt.ist.fenixWebFramework.struts.annotations.Mapping;
+import org.fenixedu.bennu.struts.annotations.ExceptionHandling;
+import org.fenixedu.bennu.struts.annotations.Forward;
+import org.fenixedu.bennu.struts.annotations.Mapping;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;

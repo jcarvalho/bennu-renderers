@@ -20,7 +20,7 @@ import pt.ist.fenixWebFramework.renderers.layouts.Layout;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlotKey;
-import pt.ist.fenixWebFramework.renderers.plugin.SimpleRenderersRequestProcessor;
+import pt.ist.fenixWebFramework.renderers.plugin.RenderersRequestMapper;
 
 /**
  * This renderer creates a file input field that allows the user to submit a
@@ -162,12 +162,12 @@ public class FileInputRenderer extends InputRenderer {
             HtmlSimpleValueComponent component = (HtmlSimpleValueComponent) getControlledComponent();
             String name = component.getName();
 
-            Part file = SimpleRenderersRequestProcessor.getUploadedFile(name);
+            Part file = RenderersRequestMapper.getUploadedFile(name);
             if (file != null) { // if has file
                 Object object = this.object.getObject();
 
                 try {
-                    String currentEncoding = SimpleRenderersRequestProcessor.getCurrentEncoding();
+                    String currentEncoding = RenderersRequestMapper.getCurrentRequest().getCharacterEncoding();
                     setPropertyIgnoringErrors(object, this.fileNameSlot, currentEncoding != null ? new String(getFileName(file)
                             .getBytes(), currentEncoding) : new String(getFileName(file).getBytes()));
                 } catch (UnsupportedEncodingException e) {
@@ -216,7 +216,7 @@ public class FileInputRenderer extends InputRenderer {
             String name = this.component.getName();
 
             try {
-                Part file = SimpleRenderersRequestProcessor.getCurrentRequest().getPart(name);
+                Part file = RenderersRequestMapper.getCurrentRequest().getPart(name);
                 if (file == null) {
                     return null;
                 } else {

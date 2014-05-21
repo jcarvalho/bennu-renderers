@@ -1,4 +1,4 @@
-package org.fenixedu.bennu.portal;
+package org.fenixedu.bennu.struts.portal;
 
 import java.io.IOException;
 
@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.fenixedu.bennu.portal.domain.MenuFunctionality;
 import org.fenixedu.bennu.portal.servlet.SemanticURLHandler;
+import org.fenixedu.bennu.struts.servlet.RequestWrapperFilter;
 
-import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.ResponseWrapper;
 
 class StrutsSemanticURLHandler implements SemanticURLHandler {

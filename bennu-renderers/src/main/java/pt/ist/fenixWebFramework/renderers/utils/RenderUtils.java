@@ -32,7 +32,7 @@ import pt.ist.fenixWebFramework.rendererExtensions.util.IPresentableEnum;
 import pt.ist.fenixWebFramework.renderers.components.state.ComponentLifeCycle;
 import pt.ist.fenixWebFramework.renderers.components.state.IViewState;
 import pt.ist.fenixWebFramework.renderers.components.state.LifeCycleConstants;
-import pt.ist.fenixWebFramework.renderers.plugin.SimpleRenderersRequestProcessor;
+import pt.ist.fenixWebFramework.renderers.plugin.RenderersRequestMapper;
 
 // TODO Review much of this class
 public class RenderUtils {
@@ -204,7 +204,7 @@ public class RenderUtils {
     }
 
     private static Locale getLocale() {
-        HttpServletRequest currentRequest = SimpleRenderersRequestProcessor.getCurrentRequest();
+        HttpServletRequest currentRequest = RenderersRequestMapper.getCurrentRequest();
 
         if (currentRequest == null) { // no in renderers context
             return Locale.getDefault();
@@ -223,7 +223,7 @@ public class RenderUtils {
     }
 
     public static MessageResources getMessageResources(String bundle) {
-        HttpServletRequest request = SimpleRenderersRequestProcessor.getCurrentRequest();
+        HttpServletRequest request = RenderersRequestMapper.getCurrentRequest();
         ServletContext context = request.getServletContext();
 
         MessageResources resources = null;
@@ -340,7 +340,7 @@ public class RenderUtils {
 
     private static Object findPropertyFromRequest(String property) throws Exception {
 
-        final HttpServletRequest currentRequest = SimpleRenderersRequestProcessor.getCurrentRequest();
+        final HttpServletRequest currentRequest = RenderersRequestMapper.getCurrentRequest();
         if (currentRequest != null) {
             final int indexOfDot = property.indexOf('.');
             final String objectName = indexOfDot != -1 ? property.substring(0, indexOfDot) : property;
@@ -412,7 +412,7 @@ public class RenderUtils {
     }
 
     public static String getModuleRelativePath(String path) {
-        return getModuleRelativePath(SimpleRenderersRequestProcessor.getCurrentRequest(), path);
+        return getModuleRelativePath(RenderersRequestMapper.getCurrentRequest(), path);
     }
 
     public static String getContextRelativePath(HttpServletRequest request, String path) {
@@ -422,7 +422,7 @@ public class RenderUtils {
     }
 
     public static String getContextRelativePath(String path) {
-        return getContextRelativePath(SimpleRenderersRequestProcessor.getCurrentRequest(), path);
+        return getContextRelativePath(RenderersRequestMapper.getCurrentRequest(), path);
     }
 
     /**
@@ -569,7 +569,7 @@ public class RenderUtils {
      */
     public static IViewState getViewState() {
         List<IViewState> viewStates =
-                (List<IViewState>) SimpleRenderersRequestProcessor.getCurrentRequest().getAttribute(
+                (List<IViewState>) RenderersRequestMapper.getCurrentRequest().getAttribute(
                         LifeCycleConstants.VIEWSTATE_PARAM_NAME);
 
         if (viewStates != null && viewStates.size() > 0) {
@@ -585,7 +585,7 @@ public class RenderUtils {
      */
     public static IViewState getViewState(String id) {
         List<IViewState> viewStates =
-                (List<IViewState>) SimpleRenderersRequestProcessor.getCurrentRequest().getAttribute(
+                (List<IViewState>) RenderersRequestMapper.getCurrentRequest().getAttribute(
                         LifeCycleConstants.VIEWSTATE_PARAM_NAME);
 
         if (viewStates != null) {
@@ -609,7 +609,7 @@ public class RenderUtils {
      */
     public static void setViewState(IViewState viewState) throws InstantiationException, IllegalAccessException, IOException,
             ClassNotFoundException {
-        HttpServletRequest currentRequest = SimpleRenderersRequestProcessor.getCurrentRequest();
+        HttpServletRequest currentRequest = RenderersRequestMapper.getCurrentRequest();
 
         List<IViewState> viewStates = new ArrayList<IViewState>();
         viewStates.add(viewState);
@@ -622,12 +622,12 @@ public class RenderUtils {
      * Removes the renderer's view state from the current request.
      */
     public static void invalidateViewState() {
-        SimpleRenderersRequestProcessor.getCurrentRequest().setAttribute(LifeCycleConstants.VIEWSTATE_PARAM_NAME, null);
+        RenderersRequestMapper.getCurrentRequest().setAttribute(LifeCycleConstants.VIEWSTATE_PARAM_NAME, null);
     }
 
     public static boolean invalidateViewState(String id) {
         List<IViewState> viewStates =
-                (List<IViewState>) SimpleRenderersRequestProcessor.getCurrentRequest().getAttribute(
+                (List<IViewState>) RenderersRequestMapper.getCurrentRequest().getAttribute(
                         LifeCycleConstants.VIEWSTATE_PARAM_NAME);
 
         if (viewStates == null) {

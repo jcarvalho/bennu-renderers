@@ -1,4 +1,4 @@
-package org.fenixedu.bennu.portal;
+package org.fenixedu.bennu.struts.portal;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -19,11 +19,11 @@ import org.fenixedu.bennu.portal.model.Application;
 import org.fenixedu.bennu.portal.model.ApplicationRegistry;
 import org.fenixedu.bennu.portal.model.Functionality;
 import org.fenixedu.bennu.portal.servlet.PortalBackendRegistry;
+import org.fenixedu.bennu.struts.annotations.Mapping;
+import org.fenixedu.bennu.struts.plugin.StrutsAnnotationsPlugIn;
 import org.fenixedu.commons.i18n.LocalizedString;
 
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RenderersSessionSecret.RenderersUserAuthenticationListener;
-import pt.ist.fenixWebFramework.struts.annotations.Mapping;
-import pt.ist.fenixWebFramework.struts.plugin.StrutsAnnotationsPlugIn;
 
 @HandlesTypes({ Mapping.class, StrutsApplication.class, StrutsFunctionality.class })
 public class RenderersAnnotationProcessor implements ServletContainerInitializer {

@@ -1,4 +1,4 @@
-package pt.ist.fenixWebFramework.renderers.plugin;
+package org.fenixedu.bennu.struts.plugin;
 
 import javax.servlet.http.HttpServletRequest;
 

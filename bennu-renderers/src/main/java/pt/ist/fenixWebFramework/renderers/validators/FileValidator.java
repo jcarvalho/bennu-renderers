@@ -3,7 +3,7 @@ package pt.ist.fenixWebFramework.renderers.validators;
 import javax.servlet.http.Part;
 
 import pt.ist.fenixWebFramework.renderers.components.HtmlInputFile;
-import pt.ist.fenixWebFramework.renderers.plugin.SimpleRenderersRequestProcessor;
+import pt.ist.fenixWebFramework.renderers.plugin.RenderersRequestMapper;
 import pt.ist.fenixWebFramework.renderers.utils.RenderUtils;
 
 /**
@@ -165,7 +165,7 @@ public class FileValidator extends HtmlValidator {
     public void performValidation() {
         HtmlInputFile fileField = (HtmlInputFile) getComponent();
 
-        Part file = SimpleRenderersRequestProcessor.getUploadedFile(fileField.getName());
+        Part file = RenderersRequestMapper.getUploadedFile(fileField.getName());
         if (file == null && isRequired()) {
             setInvalid("renderers.validator.required");
             return;

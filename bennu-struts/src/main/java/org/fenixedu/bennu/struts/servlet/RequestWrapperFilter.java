@@ -1,4 +1,4 @@
-package pt.ist.fenixWebFramework.servlets.filters;
+package org.fenixedu.bennu.struts.servlet;
 
 import java.io.IOException;
 import java.security.Principal;

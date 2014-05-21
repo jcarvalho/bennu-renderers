@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -8,19 +8,18 @@
         <version>4.1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>bennu-renderers-example</artifactId>
+    <artifactId>bennu-struts</artifactId>
     <packaging>jar</packaging>
-    <name>Renderers Example</name>
+    <name>Bennu Struts Integration Framework</name>
+
+    <properties>
+        <version.org.fenixedu.bennu>3.0.1</version.org.fenixedu.bennu>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.fenixedu</groupId>
             <artifactId>bennu-renderers</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.fenixedu</groupId>
-            <artifactId>bennu-struts</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
