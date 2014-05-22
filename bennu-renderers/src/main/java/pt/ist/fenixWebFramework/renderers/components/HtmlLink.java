@@ -21,19 +21,18 @@ public class HtmlLink extends HtmlComponent {
     private String anchor;
     private String contentType;
     private String charSet;
-    private boolean moduleRelative;
     private boolean contextRelative;
     private boolean escapeAmpersand;
 
     private HtmlComponent body;
 
-    private Map<String, String[]> parameters;
+    private final Map<String, String[]> parameters;
 
     public HtmlLink() {
         super();
 
         parameters = new Hashtable<String, String[]>();
-        setModuleRelative(true);
+        setContextRelative(true);
         setEscapeAmpersand(true);
     }
 
@@ -205,24 +204,14 @@ public class HtmlLink extends HtmlComponent {
         return this.contextRelative;
     }
 
-    public void setContextRelative(boolean contextRelative) {
-        this.contextRelative = contextRelative;
-
-        if (!contextRelative) {
-            setModuleRelative(false);
-        }
-    }
-
-    public boolean isModuleRelative() {
-        return this.moduleRelative;
-    }
-
     public void setModuleRelative(boolean moduleRelative) {
-        this.moduleRelative = moduleRelative;
-
         if (moduleRelative) {
             setContextRelative(true);
         }
+    }
+
+    public void setContextRelative(boolean contextRelative) {
+        this.contextRelative = contextRelative;
     }
 
     public boolean isEscapeAmpersand() {
@@ -271,8 +260,6 @@ public class HtmlLink extends HtmlComponent {
 
         if (getModule() != null) {
             buffer.append(RenderUtils.getContextRelativePath(getModule()));
-        } else if (isModuleRelative()) {
-            buffer.append(RenderUtils.getModuleRelativePath(""));
         } else if (isContextRelative()) {
             buffer.append(RenderUtils.getContextRelativePath(""));
         }

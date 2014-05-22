@@ -259,11 +259,7 @@ public abstract class BaseRenderObjectTag extends TagSupport {
         component.draw(pageContext);
     }
 
-    protected ViewDestination normalizeDestination(ViewDestination destination, String currentPath, String module) {
-        if (destination.getModule() == null) {
-            destination.setModule(module);
-        }
-
+    protected ViewDestination normalizeDestination(ViewDestination destination, String currentPath) {
         if (destination.getPath() == null) {
             destination.setPath(currentPath);
         }
@@ -283,50 +279,23 @@ public abstract class BaseRenderObjectTag extends TagSupport {
         viewState.setInputDestination(getInputDestination());
 
         String currentPath = getCurrentPath();
-        ModuleConfig module = TagUtils.getInstance().getModuleConfig(pageContext);
 
         for (String name : getDestinations().keySet()) {
             ViewDestination destination = getDestinations().get(name);
 
-            viewState.addDestination(name, normalizeDestination(destination, currentPath, module.getPrefix()));
+            viewState.addDestination(name, normalizeDestination(destination, currentPath));
         }
     }
 
     protected ViewDestination getInputDestination() {
-        String currentPath = getCurrentPath();
-        ModuleConfig module = TagUtils.getInstance().getModuleConfig(pageContext);
-
-        return new ViewDestination(currentPath, module.getPrefix(), false);
+        return new ViewDestination(getCurrentPath(), "", false);
     }
 
     protected String getCurrentPath() {
-        ActionMapping mapping = (ActionMapping) pageContext.findAttribute(Globals.MAPPING_KEY);
-
-        String currentPath;
-        String contextPath = ((HttpServletRequest) pageContext.getRequest()).getContextPath();
-
-        if (mapping != null) {
-            currentPath = TagUtils.getInstance().getActionMappingURL(mapping.getPath(), pageContext);
-        } else {
-            currentPath = ((HttpServletRequest) pageContext.getRequest()).getServletPath();
-        }
-
-        if (currentPath.startsWith(contextPath)) {
-            currentPath = currentPath.substring(contextPath.length());
-        }
-
-        ModuleConfig module = TagUtils.getInstance().getModuleConfig(pageContext);
-        if (module != null && currentPath.startsWith(module.getPrefix())) {
-            currentPath = currentPath.substring(module.getPrefix().length());
-        }
-
         HttpServletRequest request = (HttpServletRequest) pageContext.getRequest();
-        if (request.getQueryString() != null) {
-            currentPath = currentPath + "?" + request.getQueryString();
-        }
+        String currentPath = request.getRequestURI().substring(request.getContextPath().length());
 
-        return currentPath;
-
+        return request.getQueryString() == null ? currentPath : currentPath + "?" + request.getQueryString();
     }
 
     public static Object lookup(PageContext pageContext, String name, String property, String scope) throws JspException {

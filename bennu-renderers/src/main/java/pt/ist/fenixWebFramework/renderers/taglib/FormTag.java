@@ -140,7 +140,7 @@ public class FormTag extends ContextTag {
         }
 
         if (getAction() != null) {
-            String path = RenderUtils.getModuleRelativePath(getAction());
+            String path = RenderUtils.getContextRelativePath(getAction());
             formHead.append("action=\"" + path + "\" ");
         }
 

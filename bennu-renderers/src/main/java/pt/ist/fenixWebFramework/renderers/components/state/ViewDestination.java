@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 public class ViewDestination implements Serializable {
 
+    private static final long serialVersionUID = 4428354268023761308L;
+
     private String path;
 
     private boolean redirect;

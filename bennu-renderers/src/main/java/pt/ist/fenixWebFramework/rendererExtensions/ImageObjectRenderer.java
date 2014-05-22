@@ -12,8 +12,6 @@ public class ImageObjectRenderer extends OutputRenderer {
 
     private boolean useParent;
 
-    private boolean moduleRelative;
-
     private boolean contextRelative;
 
     public boolean isContextRelative() {
@@ -30,14 +28,6 @@ public class ImageObjectRenderer extends OutputRenderer {
 
     public void setImageFormat(String imageFormat) {
         this.imageFormat = imageFormat;
-    }
-
-    public boolean isModuleRelative() {
-        return moduleRelative;
-    }
-
-    public void setModuleRelative(boolean moduleRelative) {
-        this.moduleRelative = moduleRelative;
     }
 
     public boolean isUseParent() {
@@ -59,9 +49,7 @@ public class ImageObjectRenderer extends OutputRenderer {
         public HtmlComponent createComponent(Object object, Class type) {
             HtmlImage image = new HtmlImage();
             String link = RenderUtils.getFormattedProperties(getImageFormat(), getTargetObject(object));
-            if (isModuleRelative()) {
-                link = RenderUtils.getModuleRelativePath("") + link;
-            } else if (isContextRelative()) {
+            if (isContextRelative()) {
                 link = RenderUtils.getContextRelativePath("") + link;
             }
             image.setSource(link);

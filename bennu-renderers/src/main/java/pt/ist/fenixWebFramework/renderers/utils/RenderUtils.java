@@ -344,24 +344,6 @@ public class RenderUtils {
         }
     }
 
-    public static String getModuleRelativePath(HttpServletRequest request, String path) {
-        ModuleConfig module = ModuleUtils.getInstance().getModuleConfig(request);
-
-        String returnPath;
-
-        if (module != null) {
-            returnPath = module.getPrefix() + path;
-        } else {
-            returnPath = path;
-        }
-
-        return getContextRelativePath(request, returnPath);
-    }
-
-    public static String getModuleRelativePath(String path) {
-        return getModuleRelativePath(RenderersRequestMapper.getCurrentRequest(), path);
-    }
-
     public static String getContextRelativePath(HttpServletRequest request, String path) {
         String contextPath = request.getContextPath();
 

@@ -294,14 +294,13 @@ public class EditObjectTag extends BaseRenderObjectTag implements ValidatorConta
 
     protected String getActionPath() {
         HttpServletResponse response = (HttpServletResponse) this.pageContext.getResponse();
+        HttpServletRequest request = (HttpServletRequest) this.pageContext.getRequest();
 
         String action = getAction();
         if (action == null) {
             action = getCurrentPath();
         }
-
-        String actionMappingURL = TagUtils.getInstance().getActionMappingURL(action, this.pageContext);
-        return response.encodeURL(actionMappingURL);
+        return response.encodeURL(request.getContextPath() + action);
     }
 
     protected IViewState getViewState() {
