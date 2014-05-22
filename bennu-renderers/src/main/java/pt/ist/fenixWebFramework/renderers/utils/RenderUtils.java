@@ -12,8 +12,10 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 import javax.servlet.http.HttpServletRequest;
@@ -160,6 +162,8 @@ public class RenderUtils {
 
     static final private String[] fields = { "description" };
 
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
     static private String getEnumStringFromFields(final Enum oneEnum) {
         for (final String field : fields) {
             final String toInspect;
@@ -178,11 +182,15 @@ public class RenderUtils {
     }
 
     public static String getResourceString(String bundle, String key) {
-        return getResourceString(bundle, key);
+        return getResourceString(bundle, key, EMPTY_STRING_ARRAY);
     }
 
     public static String getResourceString(String bundle, String key, String... args) {
-        ResourceBundle resources = ResourceBundle.getBundle(bundle, I18N.getLocale());
+        if (key == null) {
+            return null;
+        }
+        bundle = bundle == null ? "RendererResources" : getBundleName(bundle);
+        ResourceBundle resources = ResourceBundle.getBundle("resources." + bundle, I18N.getLocale());
 
         if (resources.containsKey(key)) {
             String message = resources.getString(key);
@@ -194,6 +202,24 @@ public class RenderUtils {
 
         // Fallback if the default bundle doesn't contain the requested key
         return BundleUtil.getString("resources.RendererResources", key, args);
+    }
+
+    private static final Map<String, String> BUNDLE_MAP = new ConcurrentHashMap<>();
+
+    private static String getBundleName(String bundle) {
+        return BUNDLE_MAP.computeIfAbsent(bundle, (bundleName) -> {
+            StringBuilder builder = new StringBuilder();
+            builder.append(bundleName.charAt(0));
+            for (int i = 1; i < bundleName.length(); i++) {
+                if (bundleName.charAt(i) == '_') {
+                    builder.append(bundleName.charAt(++i));
+                } else {
+                    builder.append(Character.toLowerCase(bundleName.charAt(i)));
+                }
+            }
+            System.out.println("Computed bundle name for " + bundleName + " as " + builder.toString());
+            return builder.toString();
+        });
     }
 
     private static Locale getLocale() {

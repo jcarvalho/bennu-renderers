@@ -31,7 +31,7 @@ public class StrutsPortalBackend implements PortalBackend {
 
     public static boolean chooseSelectedFunctionality(HttpServletRequest request, Class<?> actionClass) {
         if (BennuPortalDispatcher.getSelectedFunctionality(request) == null) {
-            Functionality model = RenderersAnnotationProcessor.getFunctionalityForType(actionClass);
+            Functionality model = BennuStrutsAnnotationProcessor.getFunctionalityForType(actionClass);
             if (model == null) {
                 // Action class does not contain a functionality
                 return true;

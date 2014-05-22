@@ -13,12 +13,12 @@ public @interface StrutsFunctionality {
 
     String path();
 
-    String bundle() default RenderersAnnotationProcessor.DELEGATE;
+    String bundle() default BennuStrutsAnnotationProcessor.DELEGATE;
 
     String titleKey();
 
-    String descriptionKey() default RenderersAnnotationProcessor.DELEGATE;
+    String descriptionKey() default BennuStrutsAnnotationProcessor.DELEGATE;
 
-    String accessGroup() default RenderersAnnotationProcessor.DELEGATE;
+    String accessGroup() default BennuStrutsAnnotationProcessor.DELEGATE;
 
 }

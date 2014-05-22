@@ -4,8 +4,8 @@
       "http://jakarta.apache.org/struts/dtds/struts-config_1_1.dtd">
 <struts-config>
     <!-- ========== Controller Configuration ================================ -->
-	<controller processorClass="pt.ist.fenixWebFramework.renderers.plugin.SimpleRenderersRequestProcessor"/>
+	<controller processorClass="org.fenixedu.bennu.struts.plugin.BennuStrutsRequestProcessor"/>
 
     <!-- ========== Plug Ins Configuration ================================= -->
-	<plug-in className="pt.ist.fenixWebFramework.struts.plugin.StrutsAnnotationsPlugIn" />
+	<plug-in className="org.fenixedu.bennu.struts.plugin.StrutsAnnotationsPlugIn" />
 </struts-config>

@@ -307,7 +307,7 @@ public abstract class BaseRenderObjectTag extends TagSupport {
         }
     }
 
-    public static int getScope(String scopeName) {
+    public static int getScope(String scopeName) throws JspException {
         switch (scopeName.toLowerCase()) {
         case "page":
             return 1;
@@ -318,7 +318,7 @@ public abstract class BaseRenderObjectTag extends TagSupport {
         case "application":
             return 4;
         }
-        return -1;
+        throw new JspException("Could not find scope: " + scopeName);
     }
 
 }

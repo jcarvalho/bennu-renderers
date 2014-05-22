@@ -28,7 +28,7 @@ import pt.ist.fenixWebFramework.renderers.taglib.EditObjectTag;
 import pt.ist.fenixWebFramework.servlets.filters.contentRewrite.RenderersSessionSecret.RenderersUserAuthenticationListener;
 
 @HandlesTypes({ Mapping.class, StrutsApplication.class, StrutsFunctionality.class })
-public class RenderersAnnotationProcessor implements ServletContainerInitializer {
+public class BennuStrutsAnnotationProcessor implements ServletContainerInitializer {
 
     static final String DELEGATE = "$DELEGATE_TO_PARENT$";
 

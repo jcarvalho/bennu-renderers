@@ -28,7 +28,7 @@ public @interface StrutsApplication {
 
     String titleKey();
 
-    String descriptionKey() default RenderersAnnotationProcessor.DELEGATE;
+    String descriptionKey() default BennuStrutsAnnotationProcessor.DELEGATE;
 
     String accessGroup() default "anyone";
 

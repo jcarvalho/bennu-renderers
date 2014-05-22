@@ -300,6 +300,9 @@ public class EditObjectTag extends BaseRenderObjectTag implements ValidatorConta
         if (action == null) {
             action = getCurrentPath();
         }
+        if (action.charAt(0) != '/') {
+            action = '/' + action;
+        }
         return response.encodeURL(request.getContextPath() + action);
     }
 

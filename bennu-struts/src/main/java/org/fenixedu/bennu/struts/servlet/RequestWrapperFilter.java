@@ -13,6 +13,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
@@ -28,6 +29,7 @@ import org.fenixedu.commons.i18n.I18N;
  * 
  * @author jpvl
  */
+@WebFilter(urlPatterns = "*.do")
 public class RequestWrapperFilter implements Filter {
 
     @Override
