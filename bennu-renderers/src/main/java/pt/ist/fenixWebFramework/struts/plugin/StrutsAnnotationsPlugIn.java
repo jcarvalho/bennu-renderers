@@ -25,7 +25,10 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.servlet.ServletException;
 
@@ -73,12 +76,18 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
 
     private static final Set<Class<?>> actionClasses = new HashSet<Class<?>>();
 
+    private static final Map<String, Integer> uniqueFormNames = new TreeMap<>();
+
+    private static int totalForms = 0;
+
     @Override
     public void destroy() {
     }
 
     @Override
     public void init(ActionServlet servlet, ModuleConfig config) throws ServletException {
+
+        int forms = 0;
 
         if (!initialized) {
             PartialTileDefinition.init();
@@ -108,8 +117,14 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
                 final String formName = mapping.formBeanClass().getName();
                 createFormBeanConfigIfNecessary(config, mapping, formName);
                 actionMapping.setName(formName);
+                System.out.println("Type: " + actionClass.getName() + " has form: " + formName);
+                inc(formName);
+                forms++;
             } else if (!mapping.formBean().isEmpty()) {
                 actionMapping.setName(mapping.formBean());
+                System.out.println("Type: " + actionClass.getName() + " has form: " + mapping.formBean());
+                inc(mapping.formBean());
+                forms++;
             }
 
             if (mapping.input().isEmpty()) {
@@ -134,6 +149,25 @@ public class StrutsAnnotationsPlugIn implements PlugIn {
 
             config.addActionConfig(actionMapping);
 
+        }
+
+        totalForms += forms;
+        System.out.println("Struts Forms: " + forms);
+    }
+
+    private void inc(String formName) {
+        if (uniqueFormNames.containsKey(formName)) {
+            uniqueFormNames.put(formName, uniqueFormNames.get(formName) + 1);
+        } else {
+            uniqueFormNames.put(formName, 1);
+        }
+    }
+
+    public static void dump() {
+        System.out.println("Total forms: " + totalForms);
+        System.out.println("Unique form names: ");
+        for (Entry<String, Integer> entry : uniqueFormNames.entrySet()) {
+            System.out.println("Form '" + entry.getKey() + "' is used " + entry.getValue() + " times");
         }
     }
 
