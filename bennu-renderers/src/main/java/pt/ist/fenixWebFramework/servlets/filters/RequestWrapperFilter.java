@@ -19,15 +19,9 @@
 package pt.ist.fenixWebFramework.servlets.filters;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 
@@ -41,18 +35,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.struts.Globals;
 import org.fenixedu.bennu.core.domain.User;
 import org.fenixedu.bennu.core.groups.Group;
 import org.fenixedu.bennu.core.security.Authenticate;
 import org.fenixedu.commons.i18n.I18N;
-
-import pt.ist.fenixWebFramework.servlets.commons.CommonsFile;
-import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
 
 /**
  * 17/Fev/2003
@@ -100,69 +87,12 @@ public class RequestWrapperFilter implements Filter {
 
     public static class FenixHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
-        public static final String ITEM_MAP_ATTRIBUTE = "FenixHttpServletRequestWrapper_itemsMap";
-
         private static final String PAGE_DEFAULT = "0";
 
         private static final String[] PAGE_DEFAULT_ARRAY = { PAGE_DEFAULT };
 
-        final Hashtable<String, UploadedFile> itemsMap = new Hashtable<String, UploadedFile>();
-
-        final Map<String, List<String>> parameters = new HashMap<String, List<String>>();
-
         public FenixHttpServletRequestWrapper(HttpServletRequest request) {
             super(request);
-            if (ServletFileUpload.isMultipartContent(request)) {
-                try {
-                    parseRequest(request);
-                } catch (FileUploadException e) {
-                    throw new Error(e);
-                } catch (UnsupportedEncodingException e) {
-                    throw new Error(e);
-                }
-            }
-            request.setAttribute(ITEM_MAP_ATTRIBUTE, itemsMap);
-        }
-
-        private void parseRequest(final HttpServletRequest request) throws FileUploadException, UnsupportedEncodingException {
-            final List<FileItem> fileItems = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
-
-            String characterEncoding = request.getCharacterEncoding();
-
-            for (final FileItem item : fileItems) {
-                if (item.isFormField()) {
-                    addParameter(item.getFieldName(),
-                            characterEncoding != null ? item.getString(characterEncoding) : item.getString());
-                } else {
-                    UploadedFile uploadedFile = new CommonsFile(item);
-
-                    String uploadFileName = uploadedFile.getName();
-                    String decodedName = null;
-                    if (uploadFileName != null && uploadFileName.length() > 0) {
-                        itemsMap.put(item.getFieldName(), uploadedFile);
-                        decodedName =
-                                characterEncoding != null ? new String(uploadFileName.getBytes(), characterEncoding) : new String(
-                                        uploadFileName.getBytes());
-                    }
-
-                    addParameter(item.getFieldName(), decodedName);
-                }
-            }
-        }
-
-        private void addParameter(final String fieldName, final String value) {
-            List<String> strings = parameters.get(fieldName);
-            if (strings == null) {
-                strings = new ArrayList<String>();
-                final String[] values = super.getParameterValues(fieldName);
-                if (values != null) {
-                    for (final String v : values) {
-                        strings.add(v);
-                    }
-                }
-                parameters.put(fieldName, strings);
-            }
-            strings.add(value);
         }
 
         @Override
@@ -182,42 +112,20 @@ public class RequestWrapperFilter implements Filter {
             if (!gotPageParameter) {
                 params.add("page");
             }
-            for (final String name : parameters.keySet()) {
-                params.add(name);
-            }
 
             return params.elements();
         }
 
         @Override
         public String[] getParameterValues(final String parameter) {
-            if (parameters.containsKey(parameter)) {
-                final List<String> parameterList = parameters.get(parameter);
-                return parameterList.toArray(new String[0]);
-            }
             final String[] parameterValues = super.getParameterValues(parameter);
             return parameterValues == null && parameter.equals("page") ? PAGE_DEFAULT_ARRAY : parameterValues;
         }
 
         @Override
         public String getParameter(final String parameter) {
-            if (parameters.containsKey(parameter)) {
-                final List<String> parameterList = parameters.get(parameter);
-                return parameterList.size() > 0 ? parameterList.get(0) : null;
-            }
             final String parameterValue = super.getParameter(parameter);
             return parameterValue == null && parameter.equals("page") ? PAGE_DEFAULT : parameterValue;
-        }
-
-        @Override
-        public Map<String, String[]> getParameterMap() {
-            Map<String, String[]> resultMap = new Hashtable<String, String[]>(super.getParameterMap());
-
-            for (String parameter : this.parameters.keySet()) {
-                resultMap.put(parameter, parameters.get(parameter).toArray(new String[0]));
-            }
-
-            return resultMap;
         }
 
         @Override

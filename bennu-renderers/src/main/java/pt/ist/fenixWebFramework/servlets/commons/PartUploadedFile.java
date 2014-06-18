@@ -22,46 +22,48 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.fileupload.FileItem;
+import javax.servlet.http.Part;
 
-/**
- * This is a wrapper around a {@link org.apache.commons.fileupload.FileItem file item} from Commons Upload.
- * 
- * @author cfgi
- */
-public class CommonsFile implements UploadedFile {
+import com.google.common.io.ByteStreams;
 
-    private FileItem commonsFile;
+@Deprecated
+public class PartUploadedFile implements UploadedFile {
 
-    public CommonsFile(FileItem commonsFile) {
-        super();
+    private final Part part;
 
-        this.commonsFile = commonsFile;
+    public PartUploadedFile(Part part) {
+        this.part = part;
     }
 
     @Override
     public String getName() {
-        return this.commonsFile.getName();
+        String header = part.getHeader("content-disposition");
+        for (String headerPart : header.split(";")) {
+            if (headerPart.trim().startsWith("filename")) {
+                return headerPart.substring(headerPart.indexOf('=') + 1).trim().replace("\"", "");
+            }
+        }
+        return null;
     }
 
     @Override
     public String getContentType() {
-        return this.commonsFile.getContentType();
+        return part.getContentType();
     }
 
     @Override
     public long getSize() {
-        return this.commonsFile.getSize();
+        return part.getSize();
     }
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return this.commonsFile.getInputStream();
+        return part.getInputStream();
     }
 
     @Override
     public byte[] getFileData() throws FileNotFoundException, IOException {
-        return commonsFile.get();
+        return ByteStreams.toByteArray(getInputStream());
     }
 
 }
