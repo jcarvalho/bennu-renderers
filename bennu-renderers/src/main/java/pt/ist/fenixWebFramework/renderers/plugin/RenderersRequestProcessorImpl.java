@@ -18,13 +18,15 @@
  */
 package pt.ist.fenixWebFramework.renderers.plugin;
 
-import java.util.Map;
+import java.io.IOException;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 import pt.ist.fenixWebFramework.renderers.components.state.LifeCycleConstants;
+import pt.ist.fenixWebFramework.servlets.commons.PartUploadedFile;
 import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
-import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter.FenixHttpServletRequestWrapper;
 
 /**
  * The standard renderers request processor. This processor is responsible for
@@ -56,12 +58,17 @@ public class RenderersRequestProcessorImpl {
 
     /**
      * @return the form file associated with the given field name or <code>null</code> if no file exists
+     * 
+     * @deprecated Use {@link HttpServletRequest.getPart(String)} instead
      */
-    @SuppressWarnings("unchecked")
+    @Deprecated
     public static UploadedFile getUploadedFile(String fieldName) {
-        Map<String, UploadedFile> map =
-                (Map<String, UploadedFile>) getCurrentRequest().getAttribute(FenixHttpServletRequestWrapper.ITEM_MAP_ATTRIBUTE);
-        return map == null ? null : map.get(fieldName);
+        try {
+            Part part = currentRequest.get().getPart(fieldName);
+            return part == null ? null : new PartUploadedFile(part);
+        } catch (IOException | ServletException e) {
+            return null;
+        }
     }
 
     public static String getCurrentEncoding() {

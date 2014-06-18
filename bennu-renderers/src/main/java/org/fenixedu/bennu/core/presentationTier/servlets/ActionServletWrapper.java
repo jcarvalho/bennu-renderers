@@ -57,6 +57,7 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 
 import org.apache.struts.Globals;
@@ -84,6 +85,7 @@ import com.google.gson.Gson;
  * @author Luis Cruz
  * 
  */
+@MultipartConfig
 @WebServlet(urlPatterns = ActionServletWrapper.URL_PATTERN, name = ActionServletWrapper.SERVLET_NAME, loadOnStartup = 1)
 public class ActionServletWrapper extends ActionServlet {
 
