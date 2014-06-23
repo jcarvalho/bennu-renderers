@@ -54,7 +54,8 @@
     <modules>
         <module>bennu-renderers</module>
         <module>example</module>
-    </modules>
+    <module>bennu-renderers-benchmarks</module>
+  </modules>
 
     <repositories>
         <repository>
