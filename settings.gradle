@@ -1,0 +1,6 @@
+rootProject.name = 'bennu-renderers-aggregator'
+
+include 'bennu-renderers'
+include 'example'
+
+rootProject.children.find{ it.name == 'example' }.name = 'bennu-renderers-example'

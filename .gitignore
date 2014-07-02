@@ -1,16 +1,18 @@
 *.class
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
 .settings/
 .project
 .classpath
-.serviceAnnotationLog
 
 # Maven #
 target/
 bin/
+
+# Gradle #
+.gradle/
+build/
 
