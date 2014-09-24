@@ -22,7 +22,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import pt.ist.fenixWebFramework.renderers.components.state.LifeCycleConstants;
 import pt.ist.fenixWebFramework.servlets.commons.UploadedFile;
 import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter.FenixHttpServletRequestWrapper;
 
@@ -48,7 +47,7 @@ import pt.ist.fenixWebFramework.servlets.filters.RequestWrapperFilter.FenixHttpS
  */
 public class RenderersRequestProcessorImpl {
 
-    static final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
+    public static final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
 
     public static HttpServletRequest getCurrentRequest() {
         return currentRequest.get();
@@ -69,17 +68,4 @@ public class RenderersRequestProcessorImpl {
         return currentRequest != null ? currentRequest.getCharacterEncoding() : null;
     }
 
-    protected static boolean hasViewState(HttpServletRequest request) {
-        return viewStateNotProcessed(request)
-                && (request.getParameterValues(LifeCycleConstants.VIEWSTATE_PARAM_NAME) != null || request
-                        .getParameterValues(LifeCycleConstants.VIEWSTATE_LIST_PARAM_NAME) != null);
-    }
-
-    protected static boolean viewStateNotProcessed(HttpServletRequest request) {
-        return request.getAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME) == null;
-    }
-
-    protected static void setViewStateProcessed(HttpServletRequest request) {
-        request.setAttribute(LifeCycleConstants.PROCESSED_PARAM_NAME, true);
-    }
 }
