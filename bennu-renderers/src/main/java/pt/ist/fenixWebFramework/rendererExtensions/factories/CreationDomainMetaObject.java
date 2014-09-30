@@ -61,33 +61,29 @@ public class CreationDomainMetaObject extends DomainMetaObject {
         return null;
     }
 
-    public static class CreationServicePredicateWithResult extends ServicePredicateWithResult {
+    public class CreationServicePredicateWithResult extends ServicePredicateWithResult {
 
-        DomainMetaObject domainMetaObject;
-
-        public CreationServicePredicateWithResult(List<ObjectChange> changes, final DomainMetaObject domainMetaObject) {
+        public CreationServicePredicateWithResult(List<ObjectChange> changes) {
             super(changes);
-            this.domainMetaObject = domainMetaObject;
         }
 
         @Override
-        public void execute() {
-            beforeRun(changes);
-
-            InstanceCreator instanceCreator = domainMetaObject.getInstanceCreator();
+        public Object execute() {
+            InstanceCreator instanceCreator = CreationDomainMetaObject.this.getInstanceCreator();
             if (instanceCreator != null) {
-                String oid = domainMetaObject.getExternalId();
-                ObjectKey key = new ObjectKey(oid, domainMetaObject.getType());
+                String oid = CreationDomainMetaObject.this.getExternalId();
+                ObjectKey key = new ObjectKey(oid, CreationDomainMetaObject.this.getType());
 
                 try {
                     changes.add(0, new ObjectChange(key, instanceCreator.getConstructor(), instanceCreator.getArgumentValues()));
                 } catch (Exception e) {
-                    throw new RuntimeException("could not find constructor for '" + domainMetaObject.getType().getName()
-                            + "' with arguments " + Arrays.asList(instanceCreator.getArgumentTypes()), e);
+                    throw new RuntimeException("could not find constructor for '"
+                            + CreationDomainMetaObject.this.getType().getName() + "' with arguments "
+                            + Arrays.asList(instanceCreator.getArgumentTypes()), e);
                 }
             }
 
-            super.execute();
+            return super.execute();
         }
 
         @Override
@@ -115,6 +111,6 @@ public class CreationDomainMetaObject extends DomainMetaObject {
 
     @Override
     protected ServicePredicateWithResult getServiceToCall(List<ObjectChange> changes) {
-        return new CreationServicePredicateWithResult(changes, this);
+        return new CreationServicePredicateWithResult(changes);
     }
 }
