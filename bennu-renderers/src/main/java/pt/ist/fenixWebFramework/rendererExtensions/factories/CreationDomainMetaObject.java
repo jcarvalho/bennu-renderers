@@ -29,12 +29,12 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObjectKey;
 import pt.ist.fenixframework.DomainObject;
 
 public class CreationDomainMetaObject extends DomainMetaObject {
-    private Class type;
+    private final Class type;
 
     public CreationDomainMetaObject(Class type) {
         super();
 
-        setType(type);
+        this.type = type;
         setExternalId(null);
     }
 
@@ -46,10 +46,6 @@ public class CreationDomainMetaObject extends DomainMetaObject {
     @Override
     public Class getType() {
         return type;
-    }
-
-    public void setType(Class type) {
-        this.type = type;
     }
 
     @Override

@@ -455,7 +455,7 @@ public class ComponentLifeCycle {
 
     private void updateDomain(List<IViewState> viewStates) {
         List<MetaObject> metaObjectsToCommit = new ArrayList<MetaObject>();
-        MetaObjectCollection metaObjectCollection = MetaObjectFactory.createObjectCollection();
+        MetaObjectCollection metaObjectCollection = new MetaObjectCollection();
 
         // TODO: check if should update viewstates that are not visible
         for (IViewState state : viewStates) {
