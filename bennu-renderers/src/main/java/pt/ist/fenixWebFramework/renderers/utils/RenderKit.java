@@ -18,6 +18,8 @@
  */
 package pt.ist.fenixWebFramework.renderers.utils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import pt.ist.fenixWebFramework.renderers.Renderer;
@@ -42,7 +44,7 @@ public class RenderKit {
     private final RendererRegistry inputRenderers = new RendererRegistry();
     private final RendererRegistry outputRenderers = new RendererRegistry();
 
-    private final SchemaRegistry schemaRegistry = new SchemaRegistry();
+    private final Map<String, Schema> schemaRegistry = new HashMap<>();
 
     //
     // construct
@@ -97,7 +99,7 @@ public class RenderKit {
      * Registers a new schema. The scheme can be searched by name with {@link #findSchema(String)}.
      */
     public void registerSchema(Schema schema) {
-        schemaRegistry.registerSchema(schema);
+        schemaRegistry.put(schema.getName(), schema);
     }
 
     //
@@ -112,11 +114,19 @@ public class RenderKit {
      * @exception NoSuchSchemaException if the schema named <tt>schemaName</tt> could not be found
      */
     public Schema findSchema(String schemaName) {
-        return schemaRegistry.getSchema(schemaName);
+        if (schemaName == null) {
+            return null;
+        }
+
+        if (!schemaRegistry.containsKey(schemaName)) {
+            throw new NoSuchSchemaException(schemaName);
+        }
+
+        return schemaRegistry.get(schemaName);
     }
 
     public boolean hasSchema(String schemaName) {
-        return schemaRegistry.hasSchema(schemaName);
+        return schemaRegistry.containsKey(schemaName);
     }
 
     /**
