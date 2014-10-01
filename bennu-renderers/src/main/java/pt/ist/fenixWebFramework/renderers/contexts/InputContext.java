@@ -35,7 +35,7 @@ public final class InputContext extends PresentationContext {
     public InputContext() {
         super();
 
-        setRenderMode(RenderMode.getMode("input"));
+        setRenderMode(RenderMode.INPUT);
     }
 
     protected InputContext(InputContext parent) {

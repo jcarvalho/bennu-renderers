@@ -407,7 +407,7 @@ public class ConfigurationReader {
                         modeName = "output";
                     }
 
-                    RenderMode mode = RenderMode.getMode(modeName);
+                    RenderMode mode = RenderMode.valueOf(modeName.toUpperCase());
 
                     if (hasRenderer(layout, objectClass, mode)) {
                         logger.warn("[{}] Duplicated renderer definition for type {} and layout '{}'", modeName, objectClass,

@@ -18,9 +18,6 @@
  */
 package pt.ist.fenixWebFramework.renderers.utils;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import pt.ist.fenixWebFramework.renderers.Renderer;
@@ -42,25 +39,16 @@ public class RenderKit {
 
     private static RenderKit instance = new RenderKit();
 
-    private final Map<RenderMode, RendererRegistry> registryMap;
+    private final RendererRegistry inputRenderers = new RendererRegistry();
+    private final RendererRegistry outputRenderers = new RendererRegistry();
 
-    private final SchemaRegistry schemaRegistry;
+    private final SchemaRegistry schemaRegistry = new SchemaRegistry();
 
     //
     // construct
     //
 
     private RenderKit() {
-        registryMap = new Hashtable<RenderMode, RendererRegistry>();
-
-        Iterator<RenderMode> iterator = RenderMode.getAllModes().iterator();
-        while (iterator.hasNext()) {
-            RenderMode mode = iterator.next();
-
-            registryMap.put(mode, new RendererRegistry());
-        }
-
-        schemaRegistry = new SchemaRegistry();
     }
 
     /**
@@ -82,6 +70,17 @@ public class RenderKit {
     // register renderer and schema
     //
 
+    private final RendererRegistry registry(RenderMode mode) {
+        switch (mode) {
+        case INPUT:
+            return inputRenderers;
+        case OUTPUT:
+            return outputRenderers;
+        default:
+            throw new IllegalArgumentException("Could not find registry for mode: " + mode);
+        }
+    }
+
     /**
      * Registers a new renderer for the mode type and layout specified. Every instance of this renderer will be pre-configured
      * with
@@ -91,7 +90,7 @@ public class RenderKit {
      */
     public void registerRenderer(RenderMode mode, Class<?> type, String layout, Class<? extends Renderer> renderer,
             Properties defaultProperties) {
-        registryMap.get(mode).registerRenderer(type, layout, renderer, defaultProperties);
+        registry(mode).registerRenderer(type, layout, renderer, defaultProperties);
     }
 
     /**
@@ -124,14 +123,14 @@ public class RenderKit {
      * @exception NoRendererException if no renderer description could be found
      */
     public RendererDescription getExactRendererDescription(RenderMode mode, Class type, String layout) {
-        return registryMap.get(mode).getExactRenderDescription(type, layout);
+        return registry(mode).getExactRenderDescription(type, layout);
     }
 
     /**
      * @exception NoRendererException if no renderer description could be found
      */
     public RendererDescription getRendererDescription(RenderMode mode, Class type, String layout) {
-        return registryMap.get(mode).getRenderDescription(type, layout);
+        return registry(mode).getRenderDescription(type, layout);
     }
 
     /**

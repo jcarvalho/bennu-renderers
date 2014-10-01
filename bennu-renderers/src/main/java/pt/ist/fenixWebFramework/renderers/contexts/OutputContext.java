@@ -26,7 +26,7 @@ public final class OutputContext extends PresentationContext {
     public OutputContext() {
         super();
 
-        setRenderMode(RenderMode.getMode("output"));
+        setRenderMode(RenderMode.OUTPUT);
     }
 
     protected OutputContext(OutputContext parent) {
