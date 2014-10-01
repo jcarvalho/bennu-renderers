@@ -476,7 +476,7 @@ public class ComponentLifeCycle {
             metaObjectCollection.add(object);
         }
 
-        metaObjectCollection.commit();
+        metaObjectCollection.commitChanges();
     }
 
     /**

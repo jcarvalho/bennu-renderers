@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.fenixedu.bennu.core.domain.User;
 
-import pt.ist.fenixframework.Atomic;
+import pt.ist.fenixframework.FenixFramework;
 
 /**
  * The MetaObjectCollection provides a wrapper for several meta objects.
@@ -123,9 +123,12 @@ public class MetaObjectCollection extends MetaObject {
     public void addHiddenSlot(MetaSlot slot) {
     }
 
-    @Atomic
+    public void commitChanges() {
+        FenixFramework.atomic(this::commit);
+    }
+
     @Override
-    public void commit() {
+    protected void commit() {
         for (MetaObject metaObject : getAllMetaObjects()) {
             metaObject.commit();
         }

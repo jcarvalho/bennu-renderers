@@ -92,7 +92,7 @@ public class DomainMetaObject extends SimpleMetaObject {
     }
 
     @Override
-    public void commit() {
+    protected void commit() {
         List<ObjectChange> changes = new ArrayList<ObjectChange>();
 
         ObjectKey key = new ObjectKey(getExternalId(), getType());
