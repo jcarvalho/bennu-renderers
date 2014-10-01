@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,6 @@ import org.fenixedu.bennu.core.domain.User;
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
 import pt.ist.fenixWebFramework.renderers.contexts.PresentationContext;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
-
-import com.google.common.io.BaseEncoding;
 
 public class ViewState implements IViewState {
 
@@ -353,43 +352,22 @@ public class ViewState implements IViewState {
     // Serialization utils
     //
 
-    private static String encodeObjectToBase64(Object object) throws IOException {
-        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-        GZIPOutputStream zipStream = new GZIPOutputStream(byteOutputStream);
-
-        ObjectOutputStream stream = new ObjectOutputStream(zipStream);
-
-        stream.writeObject(object);
-        stream.close();
-
-        return new String(BaseEncoding.base64().encode(byteOutputStream.toByteArray()));
-    }
-
-    public static String encodeListToBase64(List<IViewState> viewStates) throws IOException {
-        return encodeObjectToBase64(viewStates);
-    }
-
-    public static String encodeToBase64(IViewState state) throws IOException {
-        return encodeObjectToBase64(state);
+    public static String encodeToBase64(List<IViewState> viewStates) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ObjectOutputStream stream = new ObjectOutputStream(new GZIPOutputStream(baos))) {
+            stream.writeObject(viewStates);
+        }
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
     private static Object decodeObjectFromBase64(String encodedState) throws IOException, ClassNotFoundException {
-        byte[] decodedForm = BaseEncoding.base64().decode(encodedState);
-
-        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(decodedForm);
-        GZIPInputStream zipStream = new GZIPInputStream(byteInputStream);
-
-        ObjectInputStream stream = new ObjectInputStream(zipStream);
-
+        byte[] decodedForm = Base64.getDecoder().decode(encodedState);
+        ObjectInputStream stream = new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream(decodedForm)));
         return stream.readObject();
     }
 
-    public static List<IViewState> decodeListFromBase64(String encodedState) throws IOException, ClassNotFoundException {
+    public static List<IViewState> decodeFromBase64(String encodedState) throws IOException, ClassNotFoundException {
         return (List<IViewState>) decodeObjectFromBase64(encodedState);
-    }
-
-    public static IViewState decodeFromBase64(String encodedState) throws IOException, ClassNotFoundException {
-        return (IViewState) decodeObjectFromBase64(encodedState);
     }
 
     @Override
