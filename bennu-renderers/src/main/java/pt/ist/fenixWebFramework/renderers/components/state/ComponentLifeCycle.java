@@ -403,28 +403,25 @@ public class ComponentLifeCycle {
 
         metaObject.setUser(viewState.getUser());
 
-        Class contextClass = viewState.getContextClass();
-        if (contextClass != null) {
-            String layout = viewState.getLayout();
-            Properties properties = viewState.getProperties();
+        String layout = viewState.getLayout();
+        Properties properties = viewState.getProperties();
 
-            InputContext context = (InputContext) contextClass.newInstance();
-            context.setLayout(layout);
-            context.setProperties(properties);
+        InputContext context = new InputContext();
+        context.setLayout(layout);
+        context.setProperties(properties);
 
-            context.setViewState(viewState);
-            viewState.setContext(context);
+        context.setViewState(viewState);
+        viewState.setContext(context);
 
-            if (!viewState.isVisible()) {
-                return new HtmlText();
-            }
+        if (!viewState.isVisible()) {
+            return new HtmlText();
+        }
 
-            if (isHiddenSlot(viewState)) {
-                viewState.setComponent(new HtmlText());
-            } else {
-                Object object = metaObject.getObject();
-                viewState.setComponent(RenderKit.getInstance().render(context, object, metaObject.getType()));
-            }
+        if (isHiddenSlot(viewState)) {
+            viewState.setComponent(new HtmlText());
+        } else {
+            Object object = metaObject.getObject();
+            viewState.setComponent(RenderKit.getInstance().render(context, object, metaObject.getType()));
         }
 
         HtmlComponent component = viewState.getComponent();

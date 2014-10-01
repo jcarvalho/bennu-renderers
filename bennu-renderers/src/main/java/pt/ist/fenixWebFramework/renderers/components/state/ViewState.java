@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.fenixedu.bennu.core.domain.User;
 
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
-import pt.ist.fenixWebFramework.renderers.contexts.PresentationContext;
+import pt.ist.fenixWebFramework.renderers.contexts.InputContext;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
 
 public class ViewState implements IViewState {
@@ -48,9 +48,7 @@ public class ViewState implements IViewState {
 
     private Properties properties;
 
-    private transient PresentationContext context;
-
-    private Class contextClass;
+    private transient InputContext context;
 
     private Map<String, Object> attributes;
 
@@ -297,16 +295,6 @@ public class ViewState implements IViewState {
     }
 
     @Override
-    public Class getContextClass() {
-        return contextClass;
-    }
-
-    @Override
-    public void setContextClass(Class contextClass) {
-        this.contextClass = contextClass;
-    }
-
-    @Override
     public void setLocalAttribute(String name, Object value) {
         setAttribute(name, value);
     }
@@ -371,16 +359,12 @@ public class ViewState implements IViewState {
     }
 
     @Override
-    public void setContext(PresentationContext context) {
+    public void setContext(InputContext context) {
         this.context = context;
-
-        if (this.context != null) {
-            setContextClass(this.context.getClass());
-        }
     }
 
     @Override
-    public PresentationContext getContext() {
+    public InputContext getContext() {
         return this.context;
     }
 

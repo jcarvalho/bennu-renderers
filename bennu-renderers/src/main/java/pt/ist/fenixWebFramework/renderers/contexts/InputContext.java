@@ -28,7 +28,7 @@ import pt.ist.fenixWebFramework.renderers.model.MetaObjectKey;
 import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
 import pt.ist.fenixWebFramework.renderers.utils.RenderMode;
 
-public class InputContext extends PresentationContext {
+public final class InputContext extends PresentationContext {
 
     private HtmlForm form;
 

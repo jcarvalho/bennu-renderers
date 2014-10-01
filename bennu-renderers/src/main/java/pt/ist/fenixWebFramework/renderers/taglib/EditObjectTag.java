@@ -180,7 +180,6 @@ public class EditObjectTag extends BaseRenderObjectTag implements ValidatorConta
             context.setLayout(layout);
             context.setProperties(properties);
 
-            viewState.setContextClass(context.getClass());
             viewState.setContext(context);
 
             context.setViewState(viewState);
