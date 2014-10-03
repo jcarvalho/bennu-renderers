@@ -54,6 +54,7 @@ public class HtmlTextInput extends HtmlInputComponent {
 
     @Override
     public HtmlTag getOwnTag(PageContext context) {
+        addClass("form-control");
         HtmlTag tag = super.getOwnTag(context);
 
         tag.setAttribute("maxlength", this.maxLength);
