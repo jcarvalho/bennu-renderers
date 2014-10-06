@@ -64,7 +64,7 @@ public class DateInputRendererWithPicker extends DateInputRenderer {
         });
         MetaSlotKey key = (MetaSlotKey) getContext().getMetaObject().getKey();
         input.setId(key.toString());
-        container.addChild(getCalendarScript(input.getId()));
+        //container.addChild(getCalendarScript(input.getId()));
 
         return container;
     }

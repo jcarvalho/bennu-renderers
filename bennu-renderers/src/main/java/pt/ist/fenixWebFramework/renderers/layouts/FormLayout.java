@@ -25,11 +25,11 @@ public abstract class FormLayout extends Layout {
 
             HtmlLabel label = new HtmlLabel(getLabelText(rowIndex));
             label.addClass("control-label");
-            label.addClass("col-sm-" + getGridSpacing());
+            label.addClass("col-sm-2");
             container.addChild(label);
 
             HtmlBlockContainer slotContainer = new HtmlBlockContainer();
-            slotContainer.addClass("col-sm-" + (12 - getGridSpacing()));
+            slotContainer.addClass("col-sm-10");
             container.addChild(slotContainer);
 
             HtmlComponent renderedSlot = getRenderedSlot(rowIndex);
@@ -84,10 +84,6 @@ public abstract class FormLayout extends Layout {
 
     public Optional<String> getHelpLabel(int rowIndex) {
         return Optional.empty();
-    }
-
-    public int getGridSpacing() {
-        return 2;
     }
 
 }
