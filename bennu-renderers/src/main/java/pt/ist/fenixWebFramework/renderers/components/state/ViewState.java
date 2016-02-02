@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +42,25 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 
 import org.fenixedu.bennu.core.domain.User;
+import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import pt.ist.fenixWebFramework.RenderersConfigurationManager;
 import pt.ist.fenixWebFramework.renderers.components.HtmlComponent;
 import pt.ist.fenixWebFramework.renderers.contexts.InputContext;
 import pt.ist.fenixWebFramework.renderers.model.MetaObject;
+import pt.ist.fenixWebFramework.renderers.model.MetaSlot;
+import pt.ist.fenixWebFramework.renderers.model.SimpleMetaObject;
+import pt.ist.fenixframework.DomainObject;
+import pt.ist.fenixframework.FenixFramework;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.io.UnsafeOutput;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import com.esotericsoftware.minlog.Log;
+import com.google.common.base.Strings;
 
 public class ViewState implements IViewState {
 
@@ -207,7 +222,7 @@ public class ViewState implements IViewState {
     @Override
     public void addDestination(String name, ViewDestination destination) {
         if (this.destinations == null) {
-            this.destinations = new Hashtable<String, ViewDestination>();
+            this.destinations = new HashMap<>();
         }
 
         this.destinations.put(name, destination);
@@ -216,10 +231,10 @@ public class ViewState implements IViewState {
     @Override
     public ViewDestination getDestination(String name) {
         if (this.destinations == null) {
-            this.destinations = new Hashtable<String, ViewDestination>();
+            return null;
+        } else {
+            return this.destinations.get(name);
         }
-
-        return this.destinations.get(name);
     }
 
     @Override
@@ -319,7 +334,7 @@ public class ViewState implements IViewState {
     @Override
     public void setAttribute(String name, Object value) {
         if (this.attributes == null) {
-            this.attributes = new Hashtable<String, Object>();
+            this.attributes = new HashMap<>();
         }
 
         this.attributes.put(name, value);
@@ -328,19 +343,17 @@ public class ViewState implements IViewState {
     @Override
     public Object getAttribute(String name) {
         if (this.attributes == null) {
-            this.attributes = new Hashtable<String, Object>();
+            return null;
+        } else {
+            return this.attributes.get(name);
         }
-
-        return this.attributes.get(name);
     }
 
     @Override
     public void removeAttribute(String name) {
-        if (this.attributes == null) {
-            this.attributes = new Hashtable<String, Object>();
+        if (this.attributes != null) {
+            this.attributes.remove(name);
         }
-
-        this.attributes.remove(name);
     }
 
     //
@@ -348,12 +361,45 @@ public class ViewState implements IViewState {
     //
 
     public static String encodeToBase64(List<IViewState> viewStates) throws IOException {
+        Log.TRACE();
+        Kryo kryo = new Kryo();
+        kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+        kryo.setDefaultSerializer((k, type) -> {
+            FieldSerializer<?> serializer = new FieldSerializer<>(k, type);
+            serializer.setCopyTransient(false);
+            return serializer;
+        });
+        kryo.register(ViewState.class);
+        kryo.register(ViewDestination.class);
+        kryo.register(SimpleMetaObject.class);
+        kryo.register(MetaSlot.class);
+        kryo.register(Properties.class);
+        kryo.register(ArrayList.class);
+        kryo.register(Hashtable.class);
+        kryo.addDefaultSerializer(DomainObject.class, new Serializer<DomainObject>(false) {
+            @Override
+            public void write(Kryo kryo, Output output, DomainObject object) {
+                output.writeString(object.getExternalId());
+            }
+
+            @Override
+            public DomainObject read(Kryo kryo, Input input, Class type) {
+                String id = input.readString();
+                if (Strings.isNullOrEmpty(id)) {
+                    return null;
+                } else {
+                    return FenixFramework.getDomainObject(id);
+                }
+            }
+        });
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ObjectOutputStream stream = new ObjectOutputStream(new GZIPOutputStream(baos))) {
             stream.writeObject(viewStates);
         }
         byte[] bytes = baos.toByteArray();
-        return Base64.getEncoder().encodeToString(bytes) + "_" + Base64.getEncoder().encodeToString(sign(bytes));
+        String value = Base64.getEncoder().encodeToString(bytes) + "_" + Base64.getEncoder().encodeToString(sign(bytes));
+        System.out.println("Returning: " + value);
+        return value;
     }
 
     private static final String ALGORITHM = "HmacSHA256";
