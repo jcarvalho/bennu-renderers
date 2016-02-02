@@ -36,10 +36,8 @@ class StrutsSemanticURLHandler implements SemanticURLHandler {
     @Override
     public void handleRequest(MenuFunctionality functionality, HttpServletRequest request, HttpServletResponse response,
             FilterChain chain) throws IOException, ServletException {
-        ResponseWrapper responseWrapper = new ResponseWrapper(response);
         request.getRequestDispatcher(functionality.getItemKey()).forward(
-                RequestWrapperFilter.getFenixHttpServletRequestWrapper(request), responseWrapper);
-        responseWrapper.writeRealResponse(request.getSession(false));
+                RequestWrapperFilter.getFenixHttpServletRequestWrapper(request), new ResponseWrapper(response));
     }
 
 }

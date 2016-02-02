@@ -70,9 +70,7 @@ public class RequestChecksumFilter implements Filter {
                 return;
             }
         }
-        ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) servletResponse);
-        filterChain.doFilter(servletRequest, responseWrapper);
-        responseWrapper.writeRealResponse(request.getSession(false));
+        filterChain.doFilter(servletRequest, new ResponseWrapper((HttpServletResponse) servletResponse));
     }
 
     protected void handleInvalidChecksum(HttpServletRequest request, final HttpServletResponse response) throws IOException {
